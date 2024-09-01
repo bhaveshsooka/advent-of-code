@@ -1,7 +1,7 @@
 use std::io::stdin;
 
 use apply::Apply;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use models::aoc_answer::AocAnswer;
 
 mod days;
