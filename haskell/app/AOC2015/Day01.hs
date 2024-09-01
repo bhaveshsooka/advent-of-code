@@ -16,10 +16,11 @@ part1 :: Int
 part1 = sum $ getDirection <$> input
 
 findFirstTimeInBasement :: Int -> Int -> String -> Int
-findFirstTimeInBasement floor numInstructionsProcessed (instruction : resOfInstructions)
-    | floor == -1 = numInstructionsProcessed
+findFirstTimeInBasement _ _ [] = -1
+findFirstTimeInBasement floorNum numInstructionsProcessed (instruction : resOfInstructions)
+    | floorNum == -1 = numInstructionsProcessed
     | otherwise = 
-        let newFloor = floor + getDirection instruction
+        let newFloor = floorNum + getDirection instruction
             newNumInstructionsProcessed = numInstructionsProcessed + 1
         in
             findFirstTimeInBasement newFloor newNumInstructionsProcessed resOfInstructions
