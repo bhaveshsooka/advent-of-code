@@ -13,3 +13,6 @@ reqwest = { version = "0.12.7", features = ["blocking"] }
 strum = "0.26.3"
 strum_macros = "0.26.4"
 tokio = { version = "1.40.0", features = ["macros", "rt-multi-thread"] }
+
+[dev-dependencies]
+openssl = "0.10.66"
