@@ -8,8 +8,8 @@ import Data.List.Split (splitOn)
 printAoC2023Day01Answer :: IO ()
 printAoC2023Day01Answer = do
     putStrLn "------ Day 01 ------"
-    putStrLn $ "Part 1:" ++ show part1
-    putStrLn $ show part2
+    putStrLn $ "part 1: " ++ show part1
+    putStrLn $ "part 2: " ++ show part2
     putStrLn ""
 
 part1 :: Int
