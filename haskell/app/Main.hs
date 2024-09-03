@@ -1,7 +1,11 @@
 module Main where
-import AOC2015.Day01 (part1, part2)
+
+import AOC2015.Module (printAoC2015)
+import AOC2023.Module (printAoC2023)
 
 main :: IO ()
 main = do
-  putStrLn $ show part1
-  putStrLn $ show part2
+  putStrLn "---------Advent of Code 2015---------"
+  printAoC2015
+  putStrLn "---------Advent of Code 2023---------"
+  printAoC2023
