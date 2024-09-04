@@ -20,17 +20,19 @@ data PresentDimension = PresentDimension Int Int Int deriving (Show, Eq)
 
 part1 :: Int
 part1 = 
-  let presentDimensions :: [PresentDimension]
-      presentDimensions = (\[x,y,z] -> PresentDimension (read x) (read y) (read z)) <$> (splitOn "x") <$> (lines input)
+  let presentDimensions = listToPresentDimension <$> (splitOn "x") <$> (lines input)
   in
     sum $ zipWith (+) (surfaceArea <$> presentDimensions) (smallestSide <$> presentDimensions)
 
 part2 :: Int
 part2 =
-  let presentDimensions :: [PresentDimension]
-      presentDimensions = (\[x,y,z] -> PresentDimension (read x) (read y) (read z)) <$> (splitOn "x") <$> (lines input)
+  let presentDimensions = listToPresentDimension <$> (splitOn "x") <$> (lines input)
   in
     sum $ zipWith (+) (ribbonForWrap <$> presentDimensions) (ribbonForBow <$> presentDimensions)
+
+listToPresentDimension :: [String] -> PresentDimension
+listToPresentDimension [x,y,z] = PresentDimension (read x) (read y) (read z)
+listToPresentDimension _ = PresentDimension 0 0 0
 
 surfaceArea :: PresentDimension -> Int
 surfaceArea (PresentDimension l w h) = 2 * (area l w + area w h +area l h)
