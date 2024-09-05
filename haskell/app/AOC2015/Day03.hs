@@ -17,34 +17,26 @@ printAoC2015Day03Answer = do
 
 data Coord = Coord Int Int deriving (Show, Eq)
 
-instance Num Coord where
-    (+) :: Coord -> Coord -> Coord
-    Coord x y + Coord x' y' = Coord (x + x') (y + y')
-    (-) :: Coord -> Coord -> Coord
-    Coord x y - Coord x' y' = Coord (x - x') (y - y')
-    (*) :: Coord -> Coord -> Coord
-    Coord x y * Coord x' y' = Coord (x * x') (y * y')
-    negate :: Coord -> Coord
-    negate (Coord x y) = Coord (-x) (-y)
-    abs :: Coord -> Coord
-    abs (Coord x y) = Coord (abs x) (abs y)
-    signum :: Coord -> Coord
-    signum (Coord x y) = Coord (signum x) (signum y)
-    fromInteger :: Integer -> Coord
-    fromInteger x = Coord (fromInteger x) (fromInteger x)
+instance Semigroup Coord where
+  (<>) :: Coord -> Coord -> Coord
+  Coord x y <> Coord x' y' = Coord (x + x') (y + y')
+
+instance Monoid Coord where
+  mempty :: Coord
+  mempty = Coord 0 0
 
 part1 :: Int
 part1 = length 
   $ nub
-  $ scanl (+) (Coord 0 0)
+  $ scanl (<>) (Coord 0 0)
   $ getCoord <$> input
 
 part2 :: Int
 part2 = 
   let allCoords = getCoord <$> input
       dummy = Coord 0 0
-      santa = scanl (+) (Coord 0 0) $ takeEvery 2 allCoords
-      roboSanta = scanl (+) (Coord 0 0) $ takeEvery 2 $ dummy : allCoords
+      santa = scanl (<>) (Coord 0 0) $ takeEvery 2 allCoords
+      roboSanta = scanl (<>) (Coord 0 0) $ takeEvery 2 $ dummy : allCoords
   in
     length $ nub $ santa ++ roboSanta
 
