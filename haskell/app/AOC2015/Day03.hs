@@ -34,9 +34,8 @@ part1 = length
 part2 :: Int
 part2 = 
   let allCoords = getCoord <$> input
-      dummy = Coord 0 0
       santa = scanl (<>) (Coord 0 0) $ takeEvery 2 allCoords
-      roboSanta = scanl (<>) (Coord 0 0) $ takeEvery 2 $ dummy : allCoords
+      roboSanta = scanl (<>) (Coord 0 0) $ takeEvery 2 $ mempty : allCoords
   in
     length $ nub $ santa ++ roboSanta
 
