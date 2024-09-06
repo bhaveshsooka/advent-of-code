@@ -1,5 +1,5 @@
 module AOC2023.Day01 (
-  printAoC2023Day01Answer
+  printAoC2023Day01Answer,
 ) where
 
 import Data.List (intercalate)
@@ -7,50 +7,52 @@ import Data.List.Split (splitOn)
 
 printAoC2023Day01Answer :: IO ()
 printAoC2023Day01Answer = do
-    putStrLn "------ Day 01 ------"
-    putStrLn $ "part 1: " ++ show part1
-    putStrLn $ "part 2: " ++ show part2
-    putStrLn ""
+  putStrLn "------ Day 01 ------"
+  putStrLn $ "part 1: " ++ show part1
+  putStrLn $ "part 2: " ++ show part2
+  putStrLn ""
 
 part1 :: Int
 part1 =
-  let numeric_string = filter (\c -> c `elem` ['1'..'9'])
-      f = unwrap .safeHead . numeric_string
+  let numeric_string = filter (\c -> c `elem` ['1' .. '9'])
+      f = unwrap . safeHead . numeric_string
       l = last . numeric_string
-      unwrap = (\maybeChar -> case maybeChar of
-        Just c -> c
-        Nothing -> '0')
+      unwrap =
+        ( \maybeChar -> case maybeChar of
+            Just c -> c
+            Nothing -> '0'
+        )
       extractFirstAndLast = (\s -> [f s] ++ [l s])
-  in
-    sum $ read <$> extractFirstAndLast <$> numeric_string <$> (lines input)
+   in sum $ read <$> extractFirstAndLast <$> numeric_string <$> (lines input)
 
 part2 :: Int
 part2 =
-  let numeric_string = filter (\c -> c `elem` ['1'..'9'])
-      f = unwrap .safeHead . numeric_string
+  let numeric_string = filter (\c -> c `elem` ['1' .. '9'])
+      f = unwrap . safeHead . numeric_string
       l = last . numeric_string
-      unwrap = (\maybeChar -> case maybeChar of
-        Just c -> c
-        Nothing -> '0')
+      unwrap =
+        ( \maybeChar -> case maybeChar of
+            Just c -> c
+            Nothing -> '0'
+        )
       extractFirstAndLast = (\s -> [f s] ++ [l s])
-  in
-    sum $ read <$> extractFirstAndLast <$> numeric_string <$> replace_words_with_digits <$> (lines input)
+   in sum $ read <$> extractFirstAndLast <$> numeric_string <$> replace_words_with_digits <$> (lines input)
 
 safeHead :: [a] -> Maybe a
 safeHead [] = Nothing
-safeHead (x:_) = Just x
+safeHead (x : _) = Just x
 
 replace_words_with_digits :: String -> String
-replace_words_with_digits str = 
+replace_words_with_digits str =
   replace "one" "o1e" $
-  replace "two" "t2o" $
-  replace "three" "t3e" $
-  replace "four" "f4r" $
-  replace "five" "f5e" $
-  replace "six" "s6x" $
-  replace "seven" "s7n" $
-  replace "eight" "e8t" $
-  replace "nine" "n9e" str
+    replace "two" "t2o" $
+      replace "three" "t3e" $
+        replace "four" "f4r" $
+          replace "five" "f5e" $
+            replace "six" "s6x" $
+              replace "seven" "s7n" $
+                replace "eight" "e8t" $
+                  replace "nine" "n9e" str
 
 -- Helper function to replace all instances of a substring
 replace :: String -> String -> String -> String

@@ -1,5 +1,5 @@
-module AOC2015.Module(
-  printAoC2015
+module AOC2015.Module (
+  printAoC2015,
 )
 where
 

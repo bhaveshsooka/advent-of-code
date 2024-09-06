@@ -1,5 +1,5 @@
-module AOC2015.Day03(
-  printAoC2015Day03Answer
+module AOC2015.Day03 (
+  printAoC2015Day03Answer,
 ) where
 
 import Data.List (nub)
@@ -10,10 +10,10 @@ input = ">^^v^<>v<<<v<v^>>v^^^<v<>^^><^<<^vv>>>^<<^>><vv<<v^<^^><>>><>v<><>^^<^^
 
 printAoC2015Day03Answer :: IO ()
 printAoC2015Day03Answer = do
-    putStrLn "------ Day 03 ------"
-    putStrLn $ "part1: " ++ show part1
-    putStrLn $ "part2: " ++ show part2
-    putStrLn ""
+  putStrLn "------ Day 03 ------"
+  putStrLn $ "part1: " ++ show part1
+  putStrLn $ "part2: " ++ show part2
+  putStrLn ""
 
 data Coord = Coord Int Int deriving (Show, Eq)
 
@@ -26,19 +26,18 @@ instance Monoid Coord where
   mempty = Coord 0 0
 
 part1 :: Int
-part1 = length 
-  $ nub
-  $ scanl (<>) (Coord 0 0)
-  $ getCoord <$> input
+part1 =
+  length $
+    nub $
+      scanl (<>) (Coord 0 0) $
+        getCoord <$> input
 
 part2 :: Int
-part2 = 
+part2 =
   let allCoords = getCoord <$> input
       santa = scanl (<>) (Coord 0 0) $ takeEvery 2 allCoords
       roboSanta = scanl (<>) (Coord 0 0) $ takeEvery 2 $ mempty : allCoords
-  in
-    length $ nub $ santa ++ roboSanta
-
+   in length $ nub $ santa ++ roboSanta
 
 getCoord :: Char -> Coord
 getCoord '^' = Coord 0 1

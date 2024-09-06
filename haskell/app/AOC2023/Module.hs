@@ -1,5 +1,5 @@
-module AOC2023.Module(
-  printAoC2023
+module AOC2023.Module (
+  printAoC2023,
 )
 where
 
