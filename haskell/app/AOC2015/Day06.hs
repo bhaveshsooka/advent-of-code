@@ -3,9 +3,10 @@ module AOC2015.Day06 (
 ) where
 
 import Data.Foldable (foldl')
+import Data.List.Split (splitOn)
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.List.Split (splitOn)
+import GHC.Integer (orInteger)
 
 printAoC2015Day06Answer :: IO ()
 printAoC2015Day06Answer = do
@@ -28,6 +29,54 @@ part1 :: Int
 part1 =
   let instructions = parseInstruction <$> lines input
    in Set.size $ foldl' processInstruction Set.empty instructions
+
+part1' =
+  let instructions = parseInstruction <$> lines input
+   in foldl (\acc instruction -> processInstruction' acc instruction) (empty_grid 1000 1000) instructions
+
+processInstruction' :: [[Int]] -> Instruction -> [[Int]]
+processInstruction' grid (TurnOn (Coord blx bly) (Coord trx try)) =
+  let coordsToUpdate = [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
+   in foldl (\acc coord -> updateTurnOn acc coord) grid coordsToUpdate
+processInstruction' grid (TurnOff (Coord blx bly) (Coord trx try)) =
+  let coordsToUpdate = [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
+   in foldl (\acc coord -> updateTurnOff acc coord) grid coordsToUpdate
+processInstruction' grid (Toggle (Coord blx bly) (Coord trx try)) =
+  let coordsToUpdate = [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
+   in foldl (\acc coord -> updateToggle acc coord) grid coordsToUpdate
+
+updateTurnOn :: [[Int]] -> Coord -> [[Int]]
+updateTurnOn matrix (Coord x y) =
+  let (xs, ys) = (length matrix, length $ head matrix)
+   in if x < 0 || x >= xs || y < 0 || y >= ys
+        then matrix
+        else take x matrix ++ [take y (matrix !! x) ++ [1] ++ drop (y + 1) (matrix !! x)] ++ drop (x + 1) matrix
+
+updateTurnOff :: [[Int]] -> Coord -> [[Int]]
+updateTurnOff matrix (Coord x y) =
+  let (xs, ys) = (length matrix, length $ head matrix)
+   in if x < 0 || x >= xs || y < 0 || y >= ys
+        then matrix
+        else take x matrix ++ [take y (matrix !! x) ++ [0] ++ drop (y + 1) (matrix !! x)] ++ drop (x + 1) matrix
+
+updateToggle :: [[Int]] -> Coord -> [[Int]]
+updateToggle matrix (Coord x y) =
+  let (xs, ys) = (length matrix, length $ head matrix)
+      updatedCoord a b =
+        if matrix !! a !! b == 0
+          then 1
+          else if matrix !! a !! b == 1 then 0 else 1
+   in if x < 0 || x >= xs || y < 0 || y >= ys
+        then matrix
+        else take x matrix ++ [take y (matrix !! x) ++ [updatedCoord x y] ++ drop (y + 1) (matrix !! x)] ++ drop (x + 1) matrix
+
+testInstruction1 = TurnOn (Coord 0 0) (Coord 4 4)
+testInstruction2 = TurnOff (Coord 1 1) (Coord 3 3)
+testInstruction3 = Toggle (Coord 2 2) (Coord 2 2)
+
+test =
+  let instructions = [testInstruction1, testInstruction2, testInstruction3]
+   in foldl (\acc instruction -> processInstruction' acc instruction) (empty_grid 5 5) instructions
 
 processInstruction :: Set Coord -> Instruction -> Set Coord
 processInstruction state (TurnOn (Coord blx bly) (Coord trx try)) =
@@ -54,3 +103,11 @@ parseInstruction str =
         ["turn", "on", bl, "through", tr] -> TurnOn (parseCoord bl) (parseCoord tr)
         ["turn", "off", bl, "through", tr] -> TurnOff (parseCoord bl) (parseCoord tr)
         _ -> error "Invalid instruction"
+
+empty_grid :: Int -> Int -> [[Int]]
+empty_grid rows cols = replicate rows (replicate cols 0)
+
+-- test =
+--   let grid = empty_grid 5 5
+--       grid' = updateCellInMatrix grid 0 0 5
+--    in grid'
