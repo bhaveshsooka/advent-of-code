@@ -2,16 +2,25 @@ module AOC2015.Day06 (
   printAoC2015Day06Answer,
 ) where
 
-import Data.Foldable (foldl')
+import Control.Monad.ST (ST, runST)
+import Data.Foldable (foldl', forM_)
 import Data.List.Split (splitOn)
 import Data.Set (Set)
 import Data.Set qualified as Set
+import Data.Vector qualified as MV
+import Data.Vector qualified as V
+import Data.Vector.Mutable qualified as MV
 import GHC.Integer (orInteger)
 
 printAoC2015Day06Answer :: IO ()
 printAoC2015Day06Answer = do
   putStrLn "------ Day 06 ------"
-  putStrLn $ "part1: " ++ show part1
+  putStrLn "Sets"
+  putStrLn $ "part1: " ++ show part1Sets
+  -- putStrLn $ "part2: " ++ show part2
+  putStrLn ""
+  putStrLn "Vectors"
+  putStrLn $ "part1: " ++ show part1Vectors
   -- putStrLn $ "part2: " ++ show part2
   putStrLn ""
 
@@ -25,73 +34,6 @@ data Instruction
   | Toggle Coord Coord
   deriving (Show, Eq, Ord)
 
-part1 :: Int
-part1 =
-  let instructions = parseInstruction <$> lines input
-   in Set.size $ foldl' processInstruction Set.empty instructions
-
-part1' =
-  let instructions = parseInstruction <$> lines input
-   in foldl (\acc instruction -> processInstruction' acc instruction) (empty_grid 1000 1000) instructions
-
-processInstruction' :: [[Int]] -> Instruction -> [[Int]]
-processInstruction' grid (TurnOn (Coord blx bly) (Coord trx try)) =
-  let coordsToUpdate = [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
-   in foldl (\acc coord -> updateTurnOn acc coord) grid coordsToUpdate
-processInstruction' grid (TurnOff (Coord blx bly) (Coord trx try)) =
-  let coordsToUpdate = [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
-   in foldl (\acc coord -> updateTurnOff acc coord) grid coordsToUpdate
-processInstruction' grid (Toggle (Coord blx bly) (Coord trx try)) =
-  let coordsToUpdate = [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
-   in foldl (\acc coord -> updateToggle acc coord) grid coordsToUpdate
-
-updateTurnOn :: [[Int]] -> Coord -> [[Int]]
-updateTurnOn matrix (Coord x y) =
-  let (xs, ys) = (length matrix, length $ head matrix)
-   in if x < 0 || x >= xs || y < 0 || y >= ys
-        then matrix
-        else take x matrix ++ [take y (matrix !! x) ++ [1] ++ drop (y + 1) (matrix !! x)] ++ drop (x + 1) matrix
-
-updateTurnOff :: [[Int]] -> Coord -> [[Int]]
-updateTurnOff matrix (Coord x y) =
-  let (xs, ys) = (length matrix, length $ head matrix)
-   in if x < 0 || x >= xs || y < 0 || y >= ys
-        then matrix
-        else take x matrix ++ [take y (matrix !! x) ++ [0] ++ drop (y + 1) (matrix !! x)] ++ drop (x + 1) matrix
-
-updateToggle :: [[Int]] -> Coord -> [[Int]]
-updateToggle matrix (Coord x y) =
-  let (xs, ys) = (length matrix, length $ head matrix)
-      updatedCoord a b =
-        if matrix !! a !! b == 0
-          then 1
-          else if matrix !! a !! b == 1 then 0 else 1
-   in if x < 0 || x >= xs || y < 0 || y >= ys
-        then matrix
-        else take x matrix ++ [take y (matrix !! x) ++ [updatedCoord x y] ++ drop (y + 1) (matrix !! x)] ++ drop (x + 1) matrix
-
-testInstruction1 = TurnOn (Coord 0 0) (Coord 4 4)
-testInstruction2 = TurnOff (Coord 1 1) (Coord 3 3)
-testInstruction3 = Toggle (Coord 2 2) (Coord 2 2)
-
-test =
-  let instructions = [testInstruction1, testInstruction2, testInstruction3]
-   in foldl (\acc instruction -> processInstruction' acc instruction) (empty_grid 5 5) instructions
-
-processInstruction :: Set Coord -> Instruction -> Set Coord
-processInstruction state (TurnOn (Coord blx bly) (Coord trx try)) =
-  Set.union state $ Set.fromList [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
-processInstruction state (TurnOff (Coord blx bly) (Coord trx try)) =
-  Set.difference state $ Set.fromList [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
-processInstruction state (Toggle (Coord blx bly) (Coord trx try)) =
-  foldl' (\acc coord -> updateState acc coord) state [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
-
-updateState :: Set Coord -> Coord -> Set Coord
-updateState state newCoord =
-  if Set.member newCoord state
-    then Set.delete newCoord state
-    else Set.insert newCoord state
-
 parseInstruction :: String -> Instruction
 parseInstruction str =
   let instructionParts = words str
@@ -104,10 +46,72 @@ parseInstruction str =
         ["turn", "off", bl, "through", tr] -> TurnOff (parseCoord bl) (parseCoord tr)
         _ -> error "Invalid instruction"
 
-empty_grid :: Int -> Int -> [[Int]]
-empty_grid rows cols = replicate rows (replicate cols 0)
+-- Using Sets
+part1Sets :: Int
+part1Sets =
+  let instructions = parseInstruction <$> lines input
+   in Set.size $ foldl' processInstructionSets Set.empty instructions
 
--- test =
---   let grid = empty_grid 5 5
---       grid' = updateCellInMatrix grid 0 0 5
---    in grid'
+emptyGrid :: Int -> Int -> V.Vector (V.Vector Int)
+emptyGrid rows cols = V.replicate rows (V.replicate cols 0)
+
+processInstructionSets :: Set Coord -> Instruction -> Set Coord
+processInstructionSets state (TurnOn (Coord blx bly) (Coord trx try)) =
+  Set.union state $ Set.fromList [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
+processInstructionSets state (TurnOff (Coord blx bly) (Coord trx try)) =
+  Set.difference state $ Set.fromList [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
+processInstructionSets state (Toggle (Coord blx bly) (Coord trx try)) =
+  foldl' (\acc coord -> updateState acc coord) state [Coord x y | x <- [blx .. trx], y <- [bly .. try]]
+
+updateState :: Set Coord -> Coord -> Set Coord
+updateState state newCoord =
+  if Set.member newCoord state
+    then Set.delete newCoord state
+    else Set.insert newCoord state
+
+-- Using Vectors
+part1Vectors :: Int
+part1Vectors =
+  let instructions = parseInstruction <$> lines input
+      finalGrid = foldl' processInstructionVectors (emptyGrid 1000 1000) instructions
+   in countLights finalGrid
+
+testInstruction1 :: Instruction
+testInstruction1 = TurnOn (Coord 0 0) (Coord 4 4)
+testInstruction2 :: Instruction
+testInstruction2 = TurnOff (Coord 1 1) (Coord 3 3)
+testInstruction3 :: Instruction
+testInstruction3 = Toggle (Coord 2 2) (Coord 2 2)
+
+testSets :: Set Coord
+testSets =
+  let instructions = [testInstruction1, testInstruction2, testInstruction3]
+   in foldl' processInstructionSets Set.empty instructions
+
+testVectors :: V.Vector (V.Vector Int)
+testVectors =
+  let instructions = [testInstruction1, testInstruction2, testInstruction3]
+   in foldl (\acc instruction -> processInstructionVectors acc instruction) (emptyGrid 5 5) instructions
+
+countLights :: V.Vector (V.Vector Int) -> Int
+countLights grid = sum $ sum <$> grid
+
+processInstructionVectors :: V.Vector (V.Vector Int) -> Instruction -> V.Vector (V.Vector Int)
+processInstructionVectors grid instruction = runST $ do
+  mutableGrid <- V.thaw grid -- Convert to mutable vector
+  case instruction of
+    TurnOn (Coord blx bly) (Coord trx try) -> updateGrid mutableGrid blx bly trx try (const 1)
+    TurnOff (Coord blx bly) (Coord trx try) -> updateGrid mutableGrid blx bly trx try (const 0)
+    Toggle (Coord blx bly) (Coord trx try) -> updateGrid mutableGrid blx bly trx try toggle
+  V.freeze mutableGrid -- Convert back to immutable vector
+
+updateGrid :: MV.MVector s (V.Vector Int) -> Int -> Int -> Int -> Int -> (Int -> Int) -> ST s ()
+updateGrid grid blx bly trx try updateFn = forM_ [blx .. trx] $ \x -> do
+  row <- MV.read grid x
+  let newRow = row V.// [(y, updateFn (row V.! y)) | y <- [bly .. try]]
+  MV.write grid x newRow
+
+toggle :: Int -> Int
+toggle 0 = 1
+toggle 1 = 0
+toggle x = x
