@@ -53,8 +53,7 @@ def print_grid(grid):
 def part1():
   grid = init_grid()
   apply_instructions(grid, False)
-  count = len()
-
+  count = 0
   for i in range(1000):
     for j in range(1000):
       if grid[i][j] == 1:
