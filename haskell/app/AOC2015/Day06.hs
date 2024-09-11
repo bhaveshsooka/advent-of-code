@@ -2,8 +2,16 @@ module AOC2015.Day06 (
   printAoC2015Day06Answer,
 ) where
 
+import Control.Monad (forM_, forM)
 import Control.Monad.ST (ST, runST)
-import Data.Foldable (foldl', forM_)
+import Data.Array.ST (
+  MArray (newArray, getBounds),
+  STArray,
+  getAssocs,
+  readArray,
+  writeArray,
+ )
+import Data.Foldable (foldl')
 import Data.List.Split (splitOn)
 import Data.Map (Map, adjust, elems, fromList)
 import Data.Set (Set)
@@ -19,6 +27,7 @@ printAoC2015Day06Answer = do
   putStrLn $ "Sets Tests " ++ show testSets
   putStrLn $ "Vector Tests " ++ show testVectors
   putStrLn $ "Map Tests " ++ show testMaps
+  putStrLn $ "Array Tests " ++ show testArrays
   putStrLn "Sets"
   putStrLn $ "part1: " ++ show part1Sets
   -- putStrLn $ "part2: " ++ show part2
@@ -29,6 +38,10 @@ printAoC2015Day06Answer = do
   putStrLn ""
   putStrLn "Maps"
   putStrLn $ "part1: " ++ show part1Maps
+  -- putStrLn $ "part2: " ++ show part2
+  putStrLn ""
+  putStrLn "Arrays"
+  putStrLn $ "part1: " ++ show part1Arrays
   -- putStrLn $ "part2: " ++ show part2
   putStrLn ""
 
@@ -153,3 +166,46 @@ processInstructionMap grid instruction =
 
 updateMap :: Map Coord Int -> [Coord] -> (Int -> Int) -> Map Coord Int
 updateMap grid coords func = foldl' (\acc coord -> adjust func coord acc) grid coords
+
+-- Array
+part1Arrays :: Int
+part1Arrays = runST $ do
+  grid <- emptyArray 1000 1000
+  let instructions = parseInstruction <$> lines input
+  forM_ instructions (processInstructionArray grid)
+  countLightsArray grid
+
+testArrays :: [[Int]]
+testArrays = runST $ do
+  grid <- emptyArray 5 5
+  let instructions = [testInstruction1, testInstruction2, testInstruction3]
+  forM_ instructions (processInstructionArray grid)
+  arrayToList grid
+
+arrayToList :: STArray s (Int, Int) Int -> ST s [[Int]]
+arrayToList arr = do
+  ((xMin, yMin), (xMax, yMax)) <- getBounds arr
+  forM [xMin .. xMax] $ \x -> do
+    row <- forM [yMin .. yMax] $ \y -> readArray arr (x, y)
+    return row
+
+countLightsArray :: STArray s (Int, Int) Int -> ST s Int
+countLightsArray grid = do
+  elements <- getAssocs grid
+  return $ length $ filter (\(_, v) -> v == 1) elements
+
+emptyArray :: Int -> Int -> ST s (STArray s (Int, Int) Int)
+emptyArray rows cols = newArray ((0, 0), (rows - 1, cols - 1)) 0
+
+processInstructionArray :: STArray s (Int, Int) Int -> Instruction -> ST s ()
+processInstructionArray grid (TurnOn (Coord blx bly) (Coord trx try)) = 
+  forM_ [blx .. trx] $ \x ->
+    forM_ [bly .. try] $ \y -> writeArray grid (x, y) 1
+processInstructionArray grid (TurnOff (Coord blx bly) (Coord trx try)) = 
+  forM_ [blx .. trx] $ \x ->
+    forM_ [bly .. try] $ \y -> writeArray grid (x, y) 0
+processInstructionArray grid (Toggle (Coord blx bly) (Coord trx try)) = 
+  forM_ [blx .. trx] $ \x ->
+    forM_ [bly .. try] $ \y -> do
+      currentVal <- readArray grid (x, y)
+      writeArray grid (x, y) (toggle currentVal)
