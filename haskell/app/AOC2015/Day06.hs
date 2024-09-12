@@ -2,10 +2,10 @@ module AOC2015.Day06 (
   printAoC2015Day06Answer,
 ) where
 
-import Control.Monad (forM_, forM)
+import Control.Monad (forM, forM_)
 import Control.Monad.ST (ST, runST)
 import Data.Array.ST (
-  MArray (newArray, getBounds),
+  MArray (getBounds, newArray),
   STArray,
   getAssocs,
   readArray,
@@ -172,14 +172,21 @@ part1Arrays :: Int
 part1Arrays = runST $ do
   grid <- emptyArray 1000 1000
   let instructions = parseInstruction <$> lines input
-  forM_ instructions (processInstructionArray grid)
+  forM_ instructions (processInstructionArray grid False)
   countLightsArray grid
+
+part2Arrays :: Int
+part2Arrays = runST $ do
+  grid <- emptyArray 1000 1000
+  let instructions = parseInstruction <$> lines input
+  forM_ instructions (processInstructionArray grid True)
+  countLightsArray' grid
 
 testArrays :: [[Int]]
 testArrays = runST $ do
   grid <- emptyArray 5 5
   let instructions = [testInstruction1, testInstruction2, testInstruction3]
-  forM_ instructions (processInstructionArray grid)
+  forM_ instructions (processInstructionArray grid False)
   arrayToList grid
 
 arrayToList :: STArray s (Int, Int) Int -> ST s [[Int]]
@@ -192,20 +199,29 @@ arrayToList arr = do
 countLightsArray :: STArray s (Int, Int) Int -> ST s Int
 countLightsArray grid = do
   elements <- getAssocs grid
-  return $ length $ filter (\(_, v) -> v == 1) elements
+  return $ length $ filter (\(_, v) -> v >= 1) elements
+
+countLightsArray' :: STArray s (Int, Int) Int -> ST s Int
+countLightsArray' grid = do
+  elements <- getAssocs grid
+  return $ sum $ map snd elements
 
 emptyArray :: Int -> Int -> ST s (STArray s (Int, Int) Int)
 emptyArray rows cols = newArray ((0, 0), (rows - 1, cols - 1)) 0
 
-processInstructionArray :: STArray s (Int, Int) Int -> Instruction -> ST s ()
-processInstructionArray grid (TurnOn (Coord blx bly) (Coord trx try)) = 
+processInstructionArray :: STArray s (Int, Int) Int -> Bool -> Instruction -> ST s ()
+processInstructionArray grid brightness (TurnOn (Coord blx bly) (Coord trx try)) =
   forM_ [blx .. trx] $ \x ->
-    forM_ [bly .. try] $ \y -> writeArray grid (x, y) 1
-processInstructionArray grid (TurnOff (Coord blx bly) (Coord trx try)) = 
-  forM_ [blx .. trx] $ \x ->
-    forM_ [bly .. try] $ \y -> writeArray grid (x, y) 0
-processInstructionArray grid (Toggle (Coord blx bly) (Coord trx try)) = 
+    forM_ [bly .. try] $ \y -> do 
+      currentVal <- readArray grid (x, y)
+      writeArray grid (x, y) (if brightness then currentVal + 1 else 1)
+processInstructionArray grid brightness (TurnOff (Coord blx bly) (Coord trx try)) =
   forM_ [blx .. trx] $ \x ->
     forM_ [bly .. try] $ \y -> do
       currentVal <- readArray grid (x, y)
-      writeArray grid (x, y) (toggle currentVal)
+      writeArray grid (x, y) (if brightness then max 0 (currentVal - 1) else 0)
+processInstructionArray grid brightness (Toggle (Coord blx bly) (Coord trx try)) =
+  forM_ [blx .. trx] $ \x ->
+    forM_ [bly .. try] $ \y -> do
+      currentVal <- readArray grid (x, y)
+      writeArray grid (x, y) (if brightness then currentVal + 2 else toggle currentVal)
