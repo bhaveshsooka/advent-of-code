@@ -42,7 +42,7 @@ printAoC2015Day06Answer = do
   putStrLn ""
   putStrLn "Arrays"
   putStrLn $ "part1: " ++ show part1Arrays
-  -- putStrLn $ "part2: " ++ show part2
+  putStrLn $ "part2: " ++ show part2Arrays
   putStrLn ""
 
 input :: String
