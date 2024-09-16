@@ -1,14 +1,15 @@
 use crate::{models::aoc_answer::AocAnswer, utils::get_question_data::get_question_data};
 
+use super::YEAR;
+const DAY: i32 = 1;
+
 // --- Day 1: Trebuchet?! ---
 
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
 pub async fn solve() -> AocAnswer {
-    let input_data = get_question_data(2023, 1)
-        .await
-        .expect("Could not get Day 1 data");
+    let input_data = get_question_data(YEAR, DAY).await;
 
     let answer: AocAnswer = AocAnswer {
         day: 1,

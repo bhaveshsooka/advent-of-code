@@ -2,15 +2,16 @@ use apply::Apply;
 
 use crate::{models::aoc_answer::AocAnswer, utils::get_question_data::get_question_data};
 
+use super::YEAR;
+const DAY: i32 = 10;
+
 // --- Day 10: Pipe Maze ---
 
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
 pub async fn solve() -> AocAnswer {
-    let input_data = get_question_data(2023, 10)
-        .await
-        .expect("Could not get Day 10 data");
+    let input_data = get_question_data(YEAR, DAY).await;
 
     let answer: AocAnswer = AocAnswer {
         day: 10,

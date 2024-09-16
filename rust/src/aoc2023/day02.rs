@@ -6,15 +6,16 @@ use crate::{
     utils::get_question_data::get_question_data,
 };
 
+use super::YEAR;
+const DAY: i32 = 2;
+
 // --- Day 2: Cube Conundrum ---
 
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
 pub async fn solve() -> AocAnswer {
-    let input_data = get_question_data(2023, 2)
-        .await
-        .expect("Could not get Day 2 data");
+    let input_data = get_question_data(YEAR, DAY).await;
 
     let result: AocAnswer = AocAnswer {
         day: 2,

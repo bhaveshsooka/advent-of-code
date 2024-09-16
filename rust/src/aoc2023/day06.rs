@@ -3,15 +3,16 @@ extern crate apply;
 use crate::{models::aoc_answer::AocAnswer, utils::get_question_data::get_question_data};
 use apply::Apply;
 
+use super::YEAR;
+const DAY: i32 = 6;
+
 // --- Day 6: Wait For It ---
 
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
 pub async fn solve() -> AocAnswer {
-    let input_data = get_question_data(2023, 6)
-        .await
-        .expect("Could not get Day 6 data");
+    let input_data = get_question_data(YEAR, DAY).await;
 
     let answer: AocAnswer = AocAnswer {
         day: 6,

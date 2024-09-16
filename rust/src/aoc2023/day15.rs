@@ -11,15 +11,16 @@ use crate::{
     utils::get_question_data::get_question_data,
 };
 
+use super::YEAR;
+const DAY: i32 = 15;
+
 // --- Day 15: Lens Library ---
 
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
 pub async fn solve() -> AocAnswer {
-    let input_data = get_question_data(2023, 15)
-        .await
-        .expect("Could not get Day 15 data");
+    let input_data = get_question_data(YEAR, DAY).await;
 
     let answer: AocAnswer = AocAnswer {
         day: 15,

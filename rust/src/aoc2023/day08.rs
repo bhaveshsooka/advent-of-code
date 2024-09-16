@@ -10,15 +10,16 @@ use crate::{
     utils::get_question_data::get_question_data,
 };
 
+use super::YEAR;
+const DAY: i32 = 8;
+
 // --- Day 8: Haunted Wasteland ---
 
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
 pub async fn solve() -> AocAnswer {
-    let input_data = get_question_data(2023, 8)
-        .await
-        .expect("Could not get Day 8 data");
+    let input_data = get_question_data(YEAR, DAY).await;
 
     let answer: AocAnswer = AocAnswer {
         day: 8,

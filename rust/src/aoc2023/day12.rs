@@ -6,15 +6,16 @@ use rayon::{
 
 use crate::{models::aoc_answer::AocAnswer, utils::get_question_data::get_question_data};
 
+use super::YEAR;
+const DAY: i32 = 12;
+
 // --- Day 12: Hot Springs ---
 
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
 pub async fn solve() -> AocAnswer {
-    let input_data = get_question_data(2023, 12)
-        .await
-        .expect("Could not get Day 12 data");
+    let input_data = get_question_data(YEAR, DAY).await;
 
     let answer: AocAnswer = AocAnswer {
         day: 12,

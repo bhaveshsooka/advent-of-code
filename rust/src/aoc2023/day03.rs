@@ -2,15 +2,16 @@ use std::collections::HashMap;
 
 use crate::{models::aoc_answer::AocAnswer, utils::get_question_data::get_question_data};
 
+use super::YEAR;
+const DAY: i32 = 3;
+
 // --- Day 3: Gear Ratios ---
 
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
 pub async fn solve() -> AocAnswer {
-    let input_data = get_question_data(2023, 3)
-        .await
-        .expect("Could not get Day 3 data");
+    let input_data = get_question_data(YEAR, DAY).await;
 
     let result: AocAnswer = AocAnswer {
         day: 3,
