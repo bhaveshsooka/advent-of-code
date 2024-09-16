@@ -4,7 +4,9 @@ use apply::Apply;
 use dotenvy::dotenv;
 use models::aoc_answer::AocAnswer;
 
-mod days;
+mod aoc2015;
+mod aoc2023;
+
 pub mod models;
 pub mod utils;
 
@@ -25,21 +27,21 @@ async fn main() {
 
 async fn parse_day(day: i32) -> AocAnswer {
     match day {
-        1 => days::day01::solve().await,
-        2 => days::day02::solve().await,
-        3 => days::day03::solve().await,
-        4 => days::day04::solve().await,
-        5 => days::day05::solve().await,
-        6 => days::day06::solve().await,
-        7 => days::day07::solve().await,
-        8 => days::day08::solve().await,
-        9 => days::day09::solve().await,
-        10 => days::day10::solve().await,
-        11 => days::day11::solve().await,
-        12 => days::day12::solve().await,
-        15 => days::day15::solve().await,
-        19 => days::day19::solve().await,
-        20 => days::day20::solve().await,
+        1 => aoc2023::day01::solve().await,
+        2 => aoc2023::day02::solve().await,
+        3 => aoc2023::day03::solve().await,
+        4 => aoc2023::day04::solve().await,
+        5 => aoc2023::day05::solve().await,
+        6 => aoc2023::day06::solve().await,
+        7 => aoc2023::day07::solve().await,
+        8 => aoc2023::day08::solve().await,
+        9 => aoc2023::day09::solve().await,
+        10 => aoc2023::day10::solve().await,
+        11 => aoc2023::day11::solve().await,
+        12 => aoc2023::day12::solve().await,
+        15 => aoc2023::day15::solve().await,
+        19 => aoc2023::day19::solve().await,
+        20 => aoc2023::day20::solve().await,
         _ => {
             if day > 0 && day < 50 {
                 panic!("This day is not yet implemented")
