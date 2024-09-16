@@ -22,7 +22,7 @@ pub async fn solve() -> AocAnswer {
     let input_data = get_question_data(YEAR, DAY).await;
 
     let answer: AocAnswer = AocAnswer {
-        day: 19,
+        day: DAY,
         sample_solution_part1: sample_solution_part1(),
         sample_solution_part2: sample_solution_part2(),
         part1: part1(&input_data),
