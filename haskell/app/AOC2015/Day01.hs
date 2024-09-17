@@ -52,12 +52,12 @@ part1_1 :: Int
 part1_1 =
   last $ scanl1 (+) floorDirections
 
-foldlWhile' :: [Int] -> [Int]
-foldlWhile' = takeWhile (/= (-1)) . scanl1 (+)
+scanlUntil :: [Int] -> [Int]
+scanlUntil = takeWhile (/= (-1)) . scanl1 (+)
 
 part2_1 :: Int
 part2_1 =
-  length $ foldlWhile' floorDirections
+  length $ scanlUntil floorDirections
 
 -- Alternate solutions using fold
 part1_2 :: Int
