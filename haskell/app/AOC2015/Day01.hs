@@ -29,7 +29,7 @@ calcNextFloor c
   | c == ')' = -1
   | otherwise = 0
 
-floorDirections :: [Int]
+floorDirections :: List Int
 floorDirections = calcNextFloor <$> input
 
 data Acc = Acc Int Int deriving (Show)
@@ -53,7 +53,7 @@ part1_1 :: Int
 part1_1 = last $ scanl1 (+) floorDirections
 
 part2_1 :: Int
-part2_1 = length $ scanlUntil floorDirections
+part2_1 = (+ 1) $ length $ scanlUntil floorDirections
  where
   scanlUntil = takeWhile (/= (-1)) . scanl1 (+)
 
@@ -63,15 +63,16 @@ part1_2 = foldl1 (+) floorDirections
 
 foldlWhile :: (b -> a -> b) -> (b -> Bool) -> b -> List a -> b
 foldlWhile _ _ acc [] = acc
-foldlWhile accFn predFn acc (x : xs) =
-  if predFn acc
+foldlWhile f pred acc (x : xs) =
+  if pred acc
     then acc
-    else foldlWhile accFn predFn (accFn acc x) xs
+    else foldlWhile f pred (f acc x) xs
 
-part2_2 :: Acc
-part2_2 =
-  let countFn acc _ = acc + 1
-      foldFn acc x = acc + x
-      accFn (Acc b c) a = Acc (countFn b a) (foldFn c a)
-      predFn = (\(Acc _ b) -> b == (-1))
-   in foldlWhile accFn predFn startAcc floorDirections
+part2_2 :: Int
+part2_2 = i
+ where
+  countFn acc _ = acc + 1
+  foldFn acc x = acc + x
+  accFn (Acc b c) a = Acc (countFn b a) (foldFn c a)
+  predFn = (\(Acc _ b) -> b == (-1))
+  (Acc i _) = foldlWhile accFn predFn startAcc floorDirections
