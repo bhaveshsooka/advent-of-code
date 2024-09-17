@@ -29,8 +29,11 @@ calcNextFloor c
   | c == ')' = -1
   | otherwise = 0
 
+floorDirections :: [Int]
+floorDirections = calcNextFloor <$> input
+
 part1 :: Int
-part1 = sum $ calcNextFloor <$> input
+part1 = sum $ floorDirections
 
 findFirstTimeInBasement :: Int -> Int -> String -> Int
 findFirstTimeInBasement _ _ [] = -1
@@ -47,33 +50,19 @@ part2 = findFirstTimeInBasement 0 0 input
 -- Alternate solutions using scanl and takewhile
 part1_1 :: Int
 part1_1 =
-  last $
-    scanl (+) 0 $
-      calcNextFloor <$> input
+  last $ scanl1 (+) floorDirections
 
--- ---part1_1 "()())" -> -1----
--- [0, 1, 0, 1, 0, -1] -> -1
--- [1, -1, 1, -1, -1] -> [0, 1, 0, 1, 0, -1]
--- "()())" -> [1, -1, 1, -1, -1]
+foldlWhile' :: [Int] -> [Int]
+foldlWhile' = takeWhile (/= (-1)) . scanl1 (+)
 
 part2_1 :: Int
 part2_1 =
-  length $
-    takeWhile (/= (-1)) $
-      scanl (+) 0 $
-        calcNextFloor <$> input
-
--- ---part2_1 "()())" -> 5---
--- [0, 1, 0, 1, 0] -> 5
--- [0, 1, 0, 1, 0, -1] -> [0, 1, 0, 1, 0]
--- [1, -1, 1, -1, -1] -> [0, 1, 0, 1, 0, -1]
--- "()())" -> [1, -1, 1, -1, -1]
+  length $ foldlWhile' floorDirections
 
 -- Alternate solutions using fold
 part1_2 :: Int
 part1_2 =
-  foldl (+) 0 $
-    calcNextFloor <$> input
+  foldl (+) 0 $ floorDirections
 
 data Acc = Acc Int Int deriving (Show)
 
@@ -91,4 +80,4 @@ part2_2 =
       accFn (Acc b c) a = Acc (countFn b a) (foldFn c a)
       predFn = (\(Acc _ b) -> b == (-1))
    in foldlWhile accFn predFn (Acc 0 0) $
-        calcNextFloor <$> input
+        floorDirections
