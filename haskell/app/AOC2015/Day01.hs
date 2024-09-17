@@ -32,8 +32,9 @@ calcNextFloor c
 floorDirections :: [Int]
 floorDirections = calcNextFloor <$> input
 
+-- Recursive soltions
 part1 :: Int
-part1 = sum $ floorDirections
+part1 = sum floorDirections
 
 findFirstTimeInBasement :: Int -> Int -> String -> Int
 findFirstTimeInBasement _ _ [] = -1
@@ -49,20 +50,17 @@ part2 = findFirstTimeInBasement 0 0 input
 
 -- Alternate solutions using scanl and takewhile
 part1_1 :: Int
-part1_1 =
-  last $ scanl1 (+) floorDirections
+part1_1 = last $ scanl1 (+) floorDirections
 
 scanlUntil :: [Int] -> [Int]
 scanlUntil = takeWhile (/= (-1)) . scanl1 (+)
 
 part2_1 :: Int
-part2_1 =
-  length $ scanlUntil floorDirections
+part2_1 = length $ scanlUntil floorDirections
 
 -- Alternate solutions using fold
 part1_2 :: Int
-part1_2 =
-  foldl (+) 0 $ floorDirections
+part1_2 = foldl1 (+) floorDirections
 
 data Acc = Acc Int Int deriving (Show)
 
@@ -75,9 +73,9 @@ foldlWhile accFn predFn acc (x : xs) =
 
 part2_2 :: Acc
 part2_2 =
-  let countFn = (\acc _ -> acc + 1)
-      foldFn = (\acc x -> acc + x)
+  let countFn acc _ = acc + 1
+      foldFn acc x = acc + x
       accFn (Acc b c) a = Acc (countFn b a) (foldFn c a)
       predFn = (\(Acc _ b) -> b == (-1))
-   in foldlWhile accFn predFn (Acc 0 0) $
-        floorDirections
+      startAcc = Acc 0 0
+   in foldlWhile accFn predFn startAcc floorDirections
