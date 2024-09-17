@@ -34,15 +34,20 @@ floorDirections = calcNextFloor <$> input
 
 data Acc = Acc Int Int deriving (Show)
 
-startAcc :: Acc
-startAcc = Acc 0 0
+instance Semigroup Acc where
+  (<>) :: Acc -> Acc -> Acc
+  Acc f i <> Acc f' i' = Acc (f + f') (i + i')
+
+instance Monoid Acc where
+  mempty :: Acc
+  mempty = Acc 0 0
 
 -- Recursive soltions
 part1 :: Int
 part1 = sum floorDirections
 
 part2 :: Int
-part2 = run startAcc floorDirections
+part2 = run mempty floorDirections
  where
   run _ [] = -1
   run (Acc (-1) i) _ = i
@@ -53,26 +58,28 @@ part1_1 :: Int
 part1_1 = last $ scanl1 (+) floorDirections
 
 part2_1 :: Int
-part2_1 = (+ 1) $ length $ scanlUntil floorDirections
+part2_1 = (+ 1) $ length $ scanlUntil (+) (/= (-1)) floorDirections
  where
-  scanlUntil = takeWhile (/= (-1)) . scanl1 (+)
+  scanlUntil f g = takeWhile g . scanl1 f
 
 -- Alternate solutions using fold
 part1_2 :: Int
 part1_2 = foldl1 (+) floorDirections
 
-foldlWhile :: (b -> a -> b) -> (b -> Bool) -> b -> List a -> b
-foldlWhile _ _ acc [] = acc
-foldlWhile f pred acc (x : xs) =
-  if pred acc
-    then acc
-    else foldlWhile f pred (f acc x) xs
+foldUntil :: forall a b. (Monoid b) => (b -> a -> b) -> (b -> Bool) -> List a -> b
+foldUntil f p l = run mempty l
+ where
+  run acc [] = acc
+  run acc (x : xs) =
+    if p acc
+      then acc
+      else run (f acc x) xs
 
 part2_2 :: Int
 part2_2 = i
  where
   countFn acc _ = acc + 1
   foldFn acc x = acc + x
-  accFn (Acc b c) a = Acc (countFn b a) (foldFn c a)
-  predFn = (\(Acc _ b) -> b == (-1))
-  (Acc i _) = foldlWhile accFn predFn startAcc floorDirections
+  f (Acc b c) a = Acc (countFn b a) (foldFn c a)
+  p = (\(Acc _ b) -> b == (-1))
+  (Acc i _) = foldUntil f p floorDirections
