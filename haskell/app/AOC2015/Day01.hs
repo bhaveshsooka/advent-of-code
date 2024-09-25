@@ -58,9 +58,9 @@ part1_1 :: Int
 part1_1 = last $ scanl1 (+) floorDirections
 
 part2_1 :: Int
-part2_1 = (+ 1) $ length $ scanlUntil (+) (/= (-1)) floorDirections
+part2_1 = (+ 1) $ length $ scanlWhile (+) (/= (-1)) floorDirections
  where
-  scanlUntil f g = takeWhile g . scanl1 f
+  scanlWhile f g = takeWhile g . scanl1 f
 
 -- Alternate solutions using fold
 part1_2 :: Int
