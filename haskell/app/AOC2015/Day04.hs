@@ -2,10 +2,11 @@ module AOC2015.Day04 (
   printAoC2015Day04Answer,
 ) where
 
+import Prelude hiding (take)
 import Crypto.Hash.MD5 (hash)
 import Data.ByteString.Base16 (encode)
-import Data.ByteString.Char8 (unpack)
-import Data.ByteString.UTF8 (fromString)
+import Data.ByteString.Char8 (ByteString, pack)
+import Data.ByteString.UTF8 (fromString, take)
 
 printAoC2015Day04Answer :: IO ()
 printAoC2015Day04Answer = do
@@ -14,26 +15,24 @@ printAoC2015Day04Answer = do
   putStrLn $ "part2: " ++ show part2
   putStrLn ""
 
-input :: String
-input = "ckczppom"
+input :: ByteString
+input = fromString  "ckczppom"
 
 part1 :: Int
-part1 =
-  let findNum :: String -> Int -> Int
-      findNum h num =
-        if (take 5 h) == "00000"
-          then num
-          else findNum (md5Hash $ input ++ (show $ num + 1)) (num + 1)
-   in findNum (md5Hash input) 0
+part1 = findNum input 0
+ where
+  findNum :: ByteString -> Int -> Int
+  findNum h num 
+    | take 5 h == fromString "00000" = num
+    | otherwise = findNum (md5Hash $ input <> (pack . show $ num + 1)) (num + 1)
 
 part2 :: Int
-part2 =
-  let findNum :: String -> Int -> Int
-      findNum h num =
-        if (take 6 h) == "000000"
-          then num
-          else findNum (md5Hash $ input ++ (show $ num + 1)) (num + 1)
-   in findNum (md5Hash input) 0
+part2 = findNum input $ part1
+ where
+  findNum :: ByteString -> Int -> Int
+  findNum h num 
+    | (take 6 h) == fromString "000000" = num
+    | otherwise = findNum (md5Hash $ input <> (pack . show $ num + 1)) (num + 1)
 
-md5Hash :: String -> String
-md5Hash = unpack . encode . hash . fromString
+md5Hash :: ByteString -> ByteString
+md5Hash = encode . hash

@@ -25,12 +25,13 @@ fn part2(input_data: &String) -> String {
 }
 
 fn sample_solution_part1() -> String {
-    let input_data = String::from("1abc2\npqr3stu8vwx\na1b2c3d4e5f\ntreb7uchet\n");
+    let input_data = String::from("123 -> x\n456 -> y\nx AND y -> d\nx OR y -> e\nx LSHIFT 2 -> f\ny RSHIFT 2 -> g\nNOT x -> h\nNOT y -> i");
+
     part1(&input_data)
 }
 
 fn sample_solution_part2() -> String {
-    let input_data = String::from("two1nine\neightwothree\nabcone2threexyz\nxtwone3four\n4nineeightseven2\nzoneight234\n7pqrstsixteen\n");
+    let input_data = String::from("123 -> x\n456 -> y\nx AND y -> d\nx OR y -> e\nx LSHIFT 2 -> f\ny RSHIFT 2 -> g\nNOT x -> h\nNOT y -> i");
 
     part2(&input_data)
 }

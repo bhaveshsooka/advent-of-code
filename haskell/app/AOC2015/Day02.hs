@@ -11,7 +11,6 @@ input = "20x3x11\n15x27x5\n6x29x7\n30x15x9\n19x29x21\n10x4x15\n1x26x4\n1x5x18\n1
 printAoC2015Day02Answer :: IO ()
 printAoC2015Day02Answer = do
   putStrLn "------ Day 02 ------"
-  putStrLn "Recursive"
   putStrLn $ "part1: " ++ show part1
   putStrLn $ "part2: " ++ show part2
   putStrLn ""
