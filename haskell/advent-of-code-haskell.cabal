@@ -63,7 +63,7 @@ executable advent-of-code-haskell
     -- Modules included in this executable, other than Main.
     other-modules:      AOC2015.Module, 
                         AOC2015.Day01, AOC2015.Day02, AOC2015.Day03, AOC2015.Day04, AOC2015.Day05,
-                        AOC2015.Day06, AOC2015.Day06GPT, AOC2015.Day07, AOC2015.Day07GPT,
+                        AOC2015.Day06, AOC2015.Day06GPT, AOC2015.Day07, AOC2015.Day07GPT, AOC2015.Day08,
                         
                         AOC2023.Module,
                         AOC2023.Day01
@@ -73,7 +73,8 @@ executable advent-of-code-haskell
 
     -- Other library packages from which modules are imported.
     build-depends:      base, split, list-filter, containers, array, parallel,
-                        base16-bytestring, utf8-string, bytestring, cryptohash-md5
+                        base16-bytestring, utf8-string, bytestring, cryptohash-md5,
+                        text
 
     -- Directories containing source files.
     hs-source-dirs:     app
