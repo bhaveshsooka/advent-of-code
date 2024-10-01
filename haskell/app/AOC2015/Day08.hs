@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module AOC2015.Day08 where
+module AOC2015.Day08 (
+  printAoC2015Day08Answer,
+) where
 
 import Data.Text qualified as T
 import Data.Text.IO qualified as TIO
@@ -34,13 +36,13 @@ countCharsBefore acc s =
  where
   (before, after) = T.breakOn "\\" s
 
-printAoC2015Day08GPTAnswer :: IO ()
-printAoC2015Day08GPTAnswer = do
+printAoC2015Day08Answer :: IO ()
+printAoC2015Day08Answer = do
   input <- TIO.readFile "./data/Day08.txt"
   let stringLines = T.lines input
       fullLength = T.length <$> stringLines
       innerLength = (countChars 0) . replaceProblems . removeQuotes <$> stringLines
-      inverseInnerLength = (+) 2 . T.length . addProblems <$> stringLines  
+      inverseInnerLength = (+) 2 . T.length . addProblems <$> stringLines
   putStrLn "------ Day 08 ------"
   let part1 = (sum fullLength) - (sum innerLength)
   putStrLn $ "part1: " ++ show part1

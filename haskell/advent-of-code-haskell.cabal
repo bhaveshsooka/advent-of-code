@@ -72,9 +72,9 @@ executable advent-of-code-haskell
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:      base, split, list-filter, containers, array, parallel,
+    build-depends:      base, text, array, parallel, 
                         base16-bytestring, utf8-string, bytestring, cryptohash-md5,
-                        text
+                        containers
 
     -- Directories containing source files.
     hs-source-dirs:     app
