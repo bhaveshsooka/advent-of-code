@@ -11,6 +11,8 @@ import AOC2015.Day05 (printAoC2015Day05Answer)
 import AOC2015.Day06 (printAoC2015Day06Answer)
 import AOC2015.Day07GPT (printAoC2015Day07GPTAnswer)
 import AOC2015.Day08 (printAoC2015Day08Answer)
+import AOC2015.Day09 (printAoC2015Day09Answer)
+import AOC2015.Day10 (printAoC2015Day10Answer)
 
 printAoC2015 :: IO ()
 printAoC2015 = do
@@ -22,3 +24,5 @@ printAoC2015 = do
   printAoC2015Day06Answer
   printAoC2015Day07GPTAnswer
   printAoC2015Day08Answer
+  printAoC2015Day09Answer
+  printAoC2015Day10Answer
