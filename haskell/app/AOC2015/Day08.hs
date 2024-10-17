@@ -38,7 +38,7 @@ countCharsBefore acc s =
 
 printAoC2015Day08Answer :: IO ()
 printAoC2015Day08Answer = do
-  input <- TIO.readFile "./data/Day08.txt"
+  input <- TIO.readFile "./data/2015-08.txt"
   let stringLines = T.lines input
       fullLength = T.length <$> stringLines
       innerLength = (countChars 0) . replaceProblems . removeQuotes <$> stringLines
