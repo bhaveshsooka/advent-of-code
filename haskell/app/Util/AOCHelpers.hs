@@ -21,7 +21,7 @@ printDay (year, d) ((Part p1), (Part p2)) = do
   let day = padLeft (T.pack $ show d) '0' 2
       filename = "./data/" <> show year <> "-" <> T.unpack day <> ".txt"
   input <- TIO.readFile filename
-  putStrLn $ "------ Day " <> show day <> " ------"
+  putStrLn $ "------ Day " <> T.unpack day <> " ------"
   let part1 = show $ p1 input
   putStrLn $ "part1: " <> part1
   let part2 = show $ p2 input
