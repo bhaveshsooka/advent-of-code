@@ -6,7 +6,7 @@ module AOC2015.Day02 (
 
 import Data.List (sort)
 import Data.Text qualified as T
-import Text.Parsec (Parsec, char, digit, many1, newline, optional)
+import Text.Parsec qualified as P
 import Util.AOCHelpers (Part (Part), Parts, parseAoCInput)
 
 parts :: Parts
@@ -30,11 +30,11 @@ parseDimensionsList :: T.Text -> [PresentDimension]
 parseDimensionsList input = parseAoCInput input dimensionsListParser "dimensionsListParser"
  where
   dimensionsParser = do
-    l <- many1 digit <* char 'x'
-    w <- many1 digit <* char 'x'
-    h <- many1 digit
+    l <- P.many1 P.digit <* P.char 'x'
+    w <- P.many1 P.digit <* P.char 'x'
+    h <- P.many1 P.digit
     pure $ (read l, read w, read h)
-  dimensionsListParser = many1 $ dimensionsParser <* optional newline
+  dimensionsListParser = P.many1 $ dimensionsParser <* P.optional P.newline
 
 area :: Int -> Int -> Int
 area l w = l * w
