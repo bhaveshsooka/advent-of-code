@@ -4,7 +4,7 @@ module AOC2015.Module (
 where
 
 import AOC2015.Day01 qualified as Day01
-import AOC2015.Day02 (printAoC2015Day02Answer)
+import AOC2015.Day02 qualified as Day02
 import AOC2015.Day03 (printAoC2015Day03Answer)
 import AOC2015.Day04 (printAoC2015Day04Answer)
 import AOC2015.Day05 (printAoC2015Day05Answer)
@@ -21,7 +21,7 @@ year = 2015
 printAoC2015 :: IO ()
 printAoC2015 = do
   printDay (year, 1) Day01.parts
-  printAoC2015Day02Answer
+  printDay (year, 2) Day02.parts
   printAoC2015Day03Answer
   printAoC2015Day04Answer
   printAoC2015Day05Answer
