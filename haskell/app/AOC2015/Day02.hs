@@ -6,8 +6,8 @@ module AOC2015.Day02 (
 
 import Data.List (sort)
 import Data.Text qualified as T
-import Text.Parsec (Parsec, many1, digit, char, optional, newline, runParser)
-import Util.AOCHelpers (Part (Part), Parts)
+import Text.Parsec (Parsec, char, digit, many1, newline, optional)
+import Util.AOCHelpers (Part (Part), Parts, parseAoCInput)
 
 parts :: Parts
 parts = (Part part1, Part part2)
@@ -15,32 +15,26 @@ parts = (Part part1, Part part2)
 part1 :: T.Text -> Int
 part1 input = sum $ zipWith (+) presentSurfaceAreas smallestSides
  where
-  presentSurfaceAreas = surfaceArea <$> dimensionsList input
-  smallestSides = smallestSide <$> dimensionsList input
+  presentSurfaceAreas = surfaceArea <$> parseDimensionsList input
+  smallestSides = smallestSide <$> parseDimensionsList input
 
 part2 :: T.Text -> Int
 part2 input = sum $ zipWith (+) wrapRibbonRequired bowRibbonRequired
  where
-  wrapRibbonRequired = ribbonForWrap <$> dimensionsList input
-  bowRibbonRequired = ribbonForBow <$> dimensionsList input
+  wrapRibbonRequired = ribbonForWrap <$> parseDimensionsList input
+  bowRibbonRequired = ribbonForBow <$> parseDimensionsList input
 
 type PresentDimension = (Int, Int, Int)
 
-parseDimensions :: Parsec T.Text () PresentDimension
-parseDimensions = do 
-  l <- many1 digit <* char 'x'
-  w <- many1 digit <* char 'x'
-  h <- many1 digit
-  pure $ (read l, read w, read h)
-
-parseDimensionsList :: Parsec T.Text () [PresentDimension]
-parseDimensionsList = many1 $ parseDimensions <* optional newline
-
-dimensionsList :: T.Text -> [PresentDimension]
-dimensionsList input = either errorHandler id dimsList
-  where
-    dimsList = runParser parseDimensionsList () "parseDimensionsList" input
-    errorHandler = error . show
+parseDimensionsList :: T.Text -> [PresentDimension]
+parseDimensionsList input = parseAoCInput input dimensionsListParser "dimensionsListParser"
+ where
+  dimensionsParser = do
+    l <- many1 digit <* char 'x'
+    w <- many1 digit <* char 'x'
+    h <- many1 digit
+    pure $ (read l, read w, read h)
+  dimensionsListParser = many1 $ dimensionsParser <* optional newline
 
 area :: Int -> Int -> Int
 area l w = l * w
