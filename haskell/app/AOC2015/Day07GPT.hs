@@ -1,11 +1,13 @@
-module AOC2015.Day07GPT where
+module AOC2015.Day07GPT (
+  printAoC2015Day07GPTAnswer,
+) where
 
-import Prelude hiding (lookup)
-import Data.Bits (shift, shiftR, (.&.), (.|.), complement)
-import Data.Map (Map, fromList, lookup, insert, member, keys)
+import Data.Bits (complement, shift, shiftR, (.&.), (.|.))
+import Data.Char (isDigit)
+import Data.Map (Map, fromList, insert, keys, lookup, member)
 import Data.Maybe (fromJust)
 import Data.Word (Word16)
-import Data.Char (isDigit)
+import Prelude hiding (lookup)
 
 printAoC2015Day07GPTAnswer :: IO ()
 printAoC2015Day07GPTAnswer = do
@@ -28,13 +30,13 @@ data Op
 parseLine :: String -> (String, Op)
 parseLine s =
   case words s of
-    [a, "->", b]           -> (b, DIRECT (parseWire a))
+    [a, "->", b] -> (b, DIRECT (parseWire a))
     [a, "AND", b, "->", c] -> (c, AND (parseWire a) (parseWire b))
-    [a, "OR", b, "->", c]  -> (c, OR (parseWire a) (parseWire b))
+    [a, "OR", b, "->", c] -> (c, OR (parseWire a) (parseWire b))
     [a, "LSHIFT", b, "->", c] -> (c, LSHIFT (parseWire a) (read b))
     [a, "RSHIFT", b, "->", c] -> (c, RSHIFT (parseWire a) (read b))
-    ["NOT", a, "->", b]    -> (b, NOT (parseWire a))
-    _                      -> error ("Can't parse: " ++ s)
+    ["NOT", a, "->", b] -> (b, NOT (parseWire a))
+    _ -> error ("Can't parse: " ++ s)
 
 parseWire :: String -> Wire
 parseWire s = if all isDigit s then WInt (read s) else WStr s
@@ -58,14 +60,14 @@ processSignal :: Map String Op -> Cache -> String -> Cache
 processSignal m cache key
   | key `member` cache = cache
   | otherwise =
-    let val = case fromJust $ lookup key m of
-                DIRECT w  -> evalWire m cache w
-                AND w1 w2 -> evalWire m cache w1 .&. evalWire m cache w2
-                OR w1 w2  -> evalWire m cache w1 .|. evalWire m cache w2
-                LSHIFT w i -> evalWire m cache w `shift` i
-                RSHIFT w i -> evalWire m cache w `shiftR` i
-                NOT w     -> complement (evalWire m cache w)
-    in insert key val cache
+      let val = case fromJust $ lookup key m of
+            DIRECT w -> evalWire m cache w
+            AND w1 w2 -> evalWire m cache w1 .&. evalWire m cache w2
+            OR w1 w2 -> evalWire m cache w1 .|. evalWire m cache w2
+            LSHIFT w i -> evalWire m cache w `shift` i
+            RSHIFT w i -> evalWire m cache w `shiftR` i
+            NOT w -> complement (evalWire m cache w)
+       in insert key val cache
 
 evalWire :: Map String Op -> Cache -> Wire -> Word16
 evalWire _ _ (WInt i) = i
