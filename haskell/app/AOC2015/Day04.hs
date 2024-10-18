@@ -1,38 +1,28 @@
 module AOC2015.Day04 (
-  printAoC2015Day04Answer,
+  parts,
 ) where
 
-import Prelude hiding (take)
 import Crypto.Hash.MD5 (hash)
 import Data.ByteString.Base16 (encode)
-import Data.ByteString.Char8 (ByteString, pack)
-import Data.ByteString.UTF8 (fromString, take)
+import Data.ByteString.Char8 (ByteString, pack, take)
+import Data.Text qualified as T
+import Data.Text.Encoding (encodeUtf8)
+import Util.AOCHelpers (Part (Part), Parts)
+import Prelude hiding (take)
 
-printAoC2015Day04Answer :: IO ()
-printAoC2015Day04Answer = do
-  putStrLn "------ Day 04 ------"
-  putStrLn $ "part1: " ++ show part1
-  putStrLn $ "part2: " ++ show part2
-  putStrLn ""
+parts :: Parts
+parts = (Part part1, Part part2)
 
-input :: ByteString
-input = fromString  "ckczppom"
+part1 :: T.Text -> Int
+part1 input = findNum (encodeUtf8 input) (encodeUtf8 input) 5 0
 
-part1 :: Int
-part1 = findNum input 0
+part2 :: T.Text -> Int
+part2 input = findNum (encodeUtf8 input) (encodeUtf8 input) 6 (part1 input)
+
+findNum :: ByteString -> ByteString -> Int -> Int -> Int
+findNum input h count num =
+  if take count h == pack (replicate count '0')
+    then num
+    else findNum input (encode . hash $ newInput) count (num + 1)
  where
-  findNum :: ByteString -> Int -> Int
-  findNum h num 
-    | take 5 h == fromString "00000" = num
-    | otherwise = findNum (md5Hash $ input <> (pack . show $ num + 1)) (num + 1)
-
-part2 :: Int
-part2 = findNum input $ part1
- where
-  findNum :: ByteString -> Int -> Int
-  findNum h num 
-    | (take 6 h) == fromString "000000" = num
-    | otherwise = findNum (md5Hash $ input <> (pack . show $ num + 1)) (num + 1)
-
-md5Hash :: ByteString -> ByteString
-md5Hash = encode . hash
+  newInput = input <> (pack . show $ num + 1)
