@@ -3,7 +3,7 @@ module AOC2015.Module (
 )
 where
 
-import AOC2015.Day01 (printAoC2015Day01Answer)
+import AOC2015.Day01 qualified as Day01
 import AOC2015.Day02 (printAoC2015Day02Answer)
 import AOC2015.Day03 (printAoC2015Day03Answer)
 import AOC2015.Day04 (printAoC2015Day04Answer)
@@ -13,10 +13,14 @@ import AOC2015.Day07GPT (printAoC2015Day07GPTAnswer)
 import AOC2015.Day08 (printAoC2015Day08Answer)
 import AOC2015.Day09 (printAoC2015Day09Answer)
 import AOC2015.Day10 (printAoC2015Day10Answer)
+import Util.AOCHelpers (printDay)
+
+year :: Int
+year = 2015
 
 printAoC2015 :: IO ()
 printAoC2015 = do
-  printAoC2015Day01Answer
+  printDay (year, 1) Day01.parts
   printAoC2015Day02Answer
   printAoC2015Day03Answer
   printAoC2015Day04Answer
