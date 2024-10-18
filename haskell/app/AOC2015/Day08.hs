@@ -1,20 +1,30 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module AOC2015.Day08 (
-  printAoC2015Day08Answer,
+  parts,
 ) where
 
 import Data.Text qualified as T
-import Data.Text.IO qualified as TIO
+import Util.AOCHelpers (Part (Part), Parts)
+
+parts :: Parts
+parts = (Part part1, Part part2)
+
+part1 :: T.Text -> Int
+part1 input = (sum $ T.length <$> T.lines input) - (sum innerLength)
+ where
+  innerLength = (countChars 0) . replaceProblems . (T.drop 1 . T.dropEnd 1) <$> T.lines input
+
+part2 :: T.Text -> Int
+part2 input = (sum inverseInnerLength) - (sum $ T.length <$> T.lines input)
+ where
+  inverseInnerLength = (+) 2 . T.length . addProblems <$> T.lines input
 
 replaceProblems :: T.Text -> T.Text
 replaceProblems = T.replace "\\\\" "." . T.replace "\"" "."
 
 addProblems :: T.Text -> T.Text
 addProblems = T.concatMap (\c -> if c == '"' || c == '\\' then "\\" <> T.pack [c] else T.pack [c])
-
-removeQuotes :: T.Text -> T.Text
-removeQuotes = T.drop 1 . T.dropEnd 1
 
 countChars :: Int -> T.Text -> Int
 countChars acc s =
@@ -35,17 +45,3 @@ countCharsBefore acc s =
       _ -> countCharsBefore (acc + (T.length before) + 1) (T.drop 2 after)
  where
   (before, after) = T.breakOn "\\" s
-
-printAoC2015Day08Answer :: IO ()
-printAoC2015Day08Answer = do
-  input <- TIO.readFile "./data/2015-08.txt"
-  let stringLines = T.lines input
-      fullLength = T.length <$> stringLines
-      innerLength = (countChars 0) . replaceProblems . removeQuotes <$> stringLines
-      inverseInnerLength = (+) 2 . T.length . addProblems <$> stringLines
-  putStrLn "------ Day 08 ------"
-  let part1 = (sum fullLength) - (sum innerLength)
-  putStrLn $ "part1: " ++ show part1
-  let part2 = (sum inverseInnerLength) - (sum fullLength)
-  putStrLn $ "part2: " ++ show part2
-  putStrLn ""
