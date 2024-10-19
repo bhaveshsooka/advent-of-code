@@ -6,7 +6,6 @@ module AOC2015.Day09 (
 
 import Data.Map (Map, empty, insert, member, (!))
 import Data.Text qualified as T
-import Data.Text.IO qualified as TIO
 import Text.Parsec qualified as P
 import Util.AOCHelpers (Part (Part), Parts, parseAoCInput)
 
