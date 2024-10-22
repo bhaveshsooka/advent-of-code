@@ -1,22 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module AOC2015.Day08 (
-  parts,
+  part1,
+  part2,
 ) where
 
 import Data.Text qualified as T
-import Util.AOCHelpers (Part (Part), Parts)
-
-parts :: Parts
-parts = (Part part1, Part part2)
 
 part1 :: T.Text -> Int
-part1 input = (sum $ T.length <$> T.lines input) - (sum innerLength)
+part1 input = sum (T.length <$> T.lines input) - sum innerLength
  where
-  innerLength = (countChars 0) . replaceProblems . (T.drop 1 . T.dropEnd 1) <$> T.lines input
+  innerLength = countChars 0 . replaceProblems . T.drop 1 . T.dropEnd 1 <$> T.lines input
 
 part2 :: T.Text -> Int
-part2 input = (sum inverseInnerLength) - (sum $ T.length <$> T.lines input)
+part2 input = sum inverseInnerLength - sum (T.length <$> T.lines input)
  where
   inverseInnerLength = (+) 2 . T.length . addProblems <$> T.lines input
 
@@ -32,7 +29,7 @@ countChars acc s =
     then acc
     else case after of
       "" -> acc + countCharsBefore 0 before
-      _ -> countChars (acc + (countCharsBefore 0 before) + 1) (T.drop 4 after)
+      _ -> countChars (acc + countCharsBefore 0 before + 1) (T.drop 4 after)
  where
   (before, after) = T.breakOn "\\x" s
 
@@ -42,6 +39,6 @@ countCharsBefore acc s =
     then acc
     else case after of
       "" -> acc + T.length before
-      _ -> countCharsBefore (acc + (T.length before) + 1) (T.drop 2 after)
+      _ -> countCharsBefore (acc + T.length before + 1) (T.drop 2 after)
  where
   (before, after) = T.breakOn "\\" s

@@ -1,38 +1,68 @@
 module Util.AOCHelpers (
   printDay,
-  parseAoCInput,
-  Parts,
-  Part (Part),
 ) where
 
+import AOC2015.Day01 qualified
+import AOC2015.Day02 qualified
+import AOC2015.Day03 qualified
+import AOC2015.Day04 qualified
+import AOC2015.Day05 qualified
+import AOC2015.Day06 qualified
+import AOC2015.Day07 qualified
+import AOC2015.Day08 qualified
+import AOC2015.Day09 qualified
+import AOC2015.Day10 qualified
+import AOC2023.Day01 qualified
+import Control.Exception (tryJust)
+import Control.Monad (guard)
 import Data.Text qualified as T
 import Data.Text.IO qualified as TIO
-import Text.Parsec (Parsec, runParser)
+import Model (AOC_Day, Part (Part), Parts)
+import System.IO.Error (isDoesNotExistError)
+import Text.Printf (printf)
 
-type Year = Int
-type Day = Int
-type AOC_Day = (Year, Day)
-
-data Part = forall a. (Show a) => Part (T.Text -> a)
-type Parts = (Part, Part)
-
-printDay :: AOC_Day -> Parts -> IO ()
-printDay (year, d) ((Part p1), (Part p2)) = do
-  let day = padLeft (T.pack $ show d) '0' 2
-      filename = "./data/" <> show year <> "-" <> T.unpack day <> ".txt"
-  input <- TIO.readFile filename
-  putStrLn $ "------ Day " <> T.unpack day <> " ------"
-  let part1 = show $ p1 input
-  putStrLn $ "part1: " <> part1
-  let part2 = show $ p2 input
-  putStrLn $ "part2: " <> part2
-  putStrLn ""
-
-padLeft :: T.Text -> Char -> Int -> T.Text
-padLeft s c len = T.replicate (len - T.length s) (T.singleton c) <> s
-
-parseAoCInput :: T.Text -> Parsec T.Text () a -> String -> a
-parseAoCInput input p name = either errorHandler id parseResult
+printDay :: AOC_Day -> IO ()
+printDay (year, d) = do
+  fileContentsOrUnit <- tryJust (guard . isDoesNotExistError) (TIO.readFile filename)
+  case fileContentsOrUnit of
+    Left _ -> formatAoCOutput noData day
+    Right input -> do
+      (Part p1, Part p2) <- getPartsFromAoCDay (year, d)
+      let one = (show $ p1 input, 0)
+      let two = (show $ p2 input, 0)
+      formatAoCOutput (one, two) day
  where
-  parseResult = runParser p () name input
-  errorHandler = error . show
+  day = padLeft (T.pack $ show d) '0' 2
+  filename = "./data/" <> show year <> "-" <> T.unpack day <> ".txt"
+  noDataMessage = "File not found: " <> filename
+  noData = ((noDataMessage, 0), (noDataMessage, 0))
+  padLeft s c len = T.replicate (len - T.length s) (T.singleton c) <> s
+
+getPartsFromAoCDay :: AOC_Day -> IO Parts
+getPartsFromAoCDay aocDay
+  | not $ validated aocDay = pure (Part $ const "Doesn't exist", Part $ const "Doesn't exist")
+  | otherwise =
+      pure $ case aocDay of
+        (2015, 01) -> (Part AOC2015.Day01.part1, Part AOC2015.Day01.part2)
+        (2015, 02) -> (Part AOC2015.Day02.part1, Part AOC2015.Day02.part2)
+        (2015, 03) -> (Part AOC2015.Day03.part1, Part AOC2015.Day03.part2)
+        (2015, 04) -> (Part AOC2015.Day04.part1, Part AOC2015.Day04.part2)
+        (2015, 05) -> (Part AOC2015.Day05.part1, Part AOC2015.Day05.part2)
+        (2015, 06) -> (Part AOC2015.Day06.part1, Part AOC2015.Day06.part2)
+        (2015, 07) -> (Part AOC2015.Day07.part1, Part AOC2015.Day07.part2)
+        (2015, 08) -> (Part AOC2015.Day08.part1, Part AOC2015.Day08.part2)
+        (2015, 09) -> (Part AOC2015.Day09.part1, Part AOC2015.Day09.part2)
+        (2015, 10) -> (Part AOC2015.Day10.part1, Part AOC2015.Day10.part2)
+        (2023, 01) -> (Part AOC2023.Day01.part1, Part AOC2023.Day01.part2)
+        _ -> (Part $ const "Not there yet", Part $ const "Not there yet")
+ where
+  validated (y, d) = y >= 2015 && d >= 1 && d <= 25
+
+formatAoCOutput :: ((String, Double), (String, Double)) -> T.Text -> IO ()
+formatAoCOutput ((part1, t1), (part2, t2)) day = do
+  printf $ "------ Day " <> T.unpack day <> " ------"
+  printf "\n"
+  printf "part1: %s (%0.9f sec)" part1 t1
+  printf "\n"
+  printf "part2: %s (%0.9f sec)" part2 t2
+  printf "\n\n"

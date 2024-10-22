@@ -1,27 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module AOC2023.Day01 (
-  parts,
+  part1,
+  part2,
 ) where
 
 import Data.Text qualified as T
-import Util.AOCHelpers (Part (Part), Parts)
-
-parts :: Parts
-parts = (Part part1, Part part2)
 
 part1 :: T.Text -> Int
 part1 input = sum $ read <$> list
  where
-  list = extractFirstAndLast <$> numeric_string <$> (T.lines input)
+  list = extractFirstAndLast . numericString <$> T.lines input
 
 part2 :: T.Text -> Int
 part2 input = sum $ read <$> list
  where
-  list = extractFirstAndLast <$> numeric_string <$> replace_words_with_digits <$> (T.lines input)
+  list = (extractFirstAndLast <$> numericString) . replaceWordsWithDigits <$> T.lines input
 
-replace_words_with_digits :: T.Text -> T.Text
-replace_words_with_digits str =
+replaceWordsWithDigits :: T.Text -> T.Text
+replaceWordsWithDigits str =
   replace "one" "o1e" $
     replace "two" "t2o" $
       replace "three" "t3e" $
@@ -36,14 +33,14 @@ replace_words_with_digits str =
 replace :: T.Text -> T.Text -> T.Text -> T.Text
 replace old new = T.intercalate new . T.splitOn old
 
-numeric_string :: T.Text -> T.Text
-numeric_string = T.filter (\c -> c `elem` ['1' .. '9'])
+numericString :: T.Text -> T.Text
+numericString = T.filter (\c -> c `elem` ['1' .. '9'])
 
 f :: T.Text -> Char
-f = T.head . numeric_string
+f = T.head . numericString
 
 l :: T.Text -> Char
-l = T.last . numeric_string
+l = T.last . numericString
 
 extractFirstAndLast :: T.Text -> [Char]
-extractFirstAndLast = (\s -> [f s] ++ [l s])
+extractFirstAndLast s = f s : [l s]

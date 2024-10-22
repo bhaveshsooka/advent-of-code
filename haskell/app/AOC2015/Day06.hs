@@ -1,5 +1,6 @@
 module AOC2015.Day06 (
-  parts,
+  part1,
+  part2,
 ) where
 
 import Control.Monad (forM_)
@@ -8,10 +9,7 @@ import Data.Array.ST qualified as STA
 import Data.Functor (($>))
 import Data.Text qualified as T
 import Text.Parsec qualified as P
-import Util.AOCHelpers (Part (Part), Parts, parseAoCInput)
-
-parts :: Parts
-parts = (Part part1, Part part2)
+import Util.ParseHelpers (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = solve (parseInstructions input) False

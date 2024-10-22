@@ -1,16 +1,12 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module AOC2015.Day02 (
-  parts,
+  part1,
+  part2,
 ) where
 
 import Data.List (sort)
 import Data.Text qualified as T
 import Text.Parsec qualified as P
-import Util.AOCHelpers (Part (Part), Parts, parseAoCInput)
-
-parts :: Parts
-parts = (Part part1, Part part2)
+import Util.ParseHelpers (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = sum $ zipWith (+) presentSurfaceAreas smallestSides

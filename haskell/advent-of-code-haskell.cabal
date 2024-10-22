@@ -61,12 +61,12 @@ executable advent-of-code-haskell
     main-is:            Main.hs
 
     -- Modules included in this executable, other than Main.
-    other-modules:      Util.AOCHelpers,
+    other-modules:      Util.AOCHelpers, Util.ParseHelpers, Model,
     
                         AOC2015.Module, 
                         AOC2015.Day01, AOC2015.Day02, AOC2015.Day03, AOC2015.Day04, AOC2015.Day05,
-                        AOC2015.Day06, AOC2015.Day07, AOC2015.Day07GPT, AOC2015.Day08,
-                        AOC2015.Day09, AOC2015.Day10,
+                        AOC2015.Day06, AOC2015.Day07, AOC2015.Day08, AOC2015.Day09, AOC2015.Day10,
+                        AOC2015.Day11, AOC2015.Day12,
                         
                         AOC2023.Module,
                         AOC2023.Day01
@@ -77,7 +77,7 @@ executable advent-of-code-haskell
     -- Other library packages from which modules are imported.
     build-depends:      base, text, array, parallel, parsec,
                         base16-bytestring, utf8-string, bytestring, cryptohash-md5,
-                        containers
+                        containers, criterion
 
     -- Directories containing source files.
     hs-source-dirs:     app

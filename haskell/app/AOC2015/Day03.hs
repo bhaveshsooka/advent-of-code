@@ -1,13 +1,10 @@
 module AOC2015.Day03 (
-  parts,
+  part1,
+  part2,
 ) where
 
 import Data.List (nub)
 import Data.Text qualified as T
-import Util.AOCHelpers (Part (Part), Parts)
-
-parts :: Parts
-parts = (Part part1, Part part2)
 
 part1 :: T.Text -> Int
 part1 input = length $ nub $ scanAndTake 1 allCoords
