@@ -1,13 +1,13 @@
 module AOC2023.Module (
-  printAoC2023,
+  getParts,
 )
 where
 
-import Util.AOCHelpers (printDay)
+import AOC2023.Day01 qualified as Day01
+import Model (Part (Part), Parts)
 
-year :: Int
-year = 2023
-
-printAoC2023 :: IO ()
-printAoC2023 = do
-  printDay (year, 01)
+getParts :: Int -> Parts
+getParts day =
+  case day of
+    01 -> (Part Day01.part1, Part Day01.part2)
+    _ -> (Part $ const "Not there yet", Part $ const "Not there yet")

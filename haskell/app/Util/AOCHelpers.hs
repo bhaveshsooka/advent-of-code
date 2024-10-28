@@ -2,17 +2,8 @@ module Util.AOCHelpers (
   printDay,
 ) where
 
-import AOC2015.Day01 qualified
-import AOC2015.Day02 qualified
-import AOC2015.Day03 qualified
-import AOC2015.Day04 qualified
-import AOC2015.Day05 qualified
-import AOC2015.Day06 qualified
-import AOC2015.Day07 qualified
-import AOC2015.Day08 qualified
-import AOC2015.Day09 qualified
-import AOC2015.Day10 qualified
-import AOC2023.Day01 qualified
+import AOC2015.Module qualified as AOC2015
+import AOC2023.Module qualified as AOC2023
 import Control.Exception (tryJust)
 import Control.Monad (guard)
 import Data.Text qualified as T
@@ -39,24 +30,17 @@ printDay (year, d) = do
   padLeft s c len = T.replicate (len - T.length s) (T.singleton c) <> s
 
 getPartsFromAoCDay :: AOC_Day -> IO Parts
-getPartsFromAoCDay aocDay
-  | not $ validated aocDay = pure (Part $ const "Doesn't exist", Part $ const "Doesn't exist")
+getPartsFromAoCDay aocDay@(year, day)
+  | not . validated $ aocDay = pure (partDoesNotExist, partDoesNotExist)
   | otherwise =
-      pure $ case aocDay of
-        (2015, 01) -> (Part AOC2015.Day01.part1, Part AOC2015.Day01.part2)
-        (2015, 02) -> (Part AOC2015.Day02.part1, Part AOC2015.Day02.part2)
-        (2015, 03) -> (Part AOC2015.Day03.part1, Part AOC2015.Day03.part2)
-        (2015, 04) -> (Part AOC2015.Day04.part1, Part AOC2015.Day04.part2)
-        (2015, 05) -> (Part AOC2015.Day05.part1, Part AOC2015.Day05.part2)
-        (2015, 06) -> (Part AOC2015.Day06.part1, Part AOC2015.Day06.part2)
-        (2015, 07) -> (Part AOC2015.Day07.part1, Part AOC2015.Day07.part2)
-        (2015, 08) -> (Part AOC2015.Day08.part1, Part AOC2015.Day08.part2)
-        (2015, 09) -> (Part AOC2015.Day09.part1, Part AOC2015.Day09.part2)
-        (2015, 10) -> (Part AOC2015.Day10.part1, Part AOC2015.Day10.part2)
-        (2023, 01) -> (Part AOC2023.Day01.part1, Part AOC2023.Day01.part2)
-        _ -> (Part $ const "Not there yet", Part $ const "Not there yet")
+      pure $ case year of
+        2015 -> AOC2015.getParts day
+        2023 -> AOC2023.getParts day
+        _ -> (partNotThereYet, partNotThereYet)
  where
   validated (y, d) = y >= 2015 && d >= 1 && d <= 25
+  partDoesNotExist = Part $ const "Doesn't exist"
+  partNotThereYet = Part $ const "Not there yet"
 
 formatAoCOutput :: ((String, Double), (String, Double)) -> T.Text -> IO ()
 formatAoCOutput ((part1, t1), (part2, t2)) day = do
