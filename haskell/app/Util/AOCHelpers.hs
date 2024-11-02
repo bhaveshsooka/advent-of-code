@@ -1,52 +1,57 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Util.AOCHelpers (
-  printDay,
+  printAoCDay,
 ) where
 
 import AOC2015.Module qualified as AOC2015
 import AOC2023.Module qualified as AOC2023
-import Control.Exception (tryJust)
-import Control.Monad (guard)
 import Data.Text qualified as T
 import Data.Text.IO qualified as TIO
-import Model (AOC_Day, Part (Part), Parts)
-import System.IO.Error (isDoesNotExistError)
+import Data.Text.Lazy qualified as TL
+import Formatting (fixed, format, text, (%))
+import Model (AoCAnswer, AoCDay, Part (Part), Parts, Timing (NoValue, Value), errMsgParts)
+import System.IO.Error (tryIOError)
 import Text.Printf (printf)
 
-printDay :: AOC_Day -> IO ()
-printDay (year, d) = do
-  fileContentsOrUnit <- tryJust (guard . isDoesNotExistError) (TIO.readFile filename)
-  case fileContentsOrUnit of
-    Left _ -> formatAoCOutput noData day
-    Right input -> do
-      (Part p1, Part p2) <- getPartsFromAoCDay (year, d)
-      let one = (show $ p1 input, 0)
-      let two = (show $ p2 input, 0)
-      formatAoCOutput (one, two) day
+printAoCDay :: AoCDay -> IO ()
+printAoCDay (year, day) =
+  if not validated
+    then do
+      printf $ "------ Day " <> T.unpack d <> " ------"
+      printf $ "\npart1: " <> errMsgInvalidYear
+      printf $ "\npart2: " <> errMsgInvalidYear
+      printf "\n\n"
+    else do
+      (Part part1, Part part2) <- getAoCDayParts (year, day)
+      inputTextResult <- tryIOError $ TIO.readFile filename
+      (p1, p2) <- pure $ case inputTextResult of
+        Left _ -> (errMsg, errMsg)
+        Right a -> (runPart part1 a, runPart part2 a)
+      printf $ "------ Day " <> T.unpack d <> " ------"
+      printf $ "\npart1: " <> p1
+      printf $ "\npart2: " <> p2
+      printf "\n\n"
  where
-  day = padLeft (T.pack $ show d) '0' 2
-  filename = "./data/" <> show year <> "-" <> T.unpack day <> ".txt"
-  noDataMessage = "File not found: " <> filename
-  noData = ((noDataMessage, 0), (noDataMessage, 0))
-  padLeft s c len = T.replicate (len - T.length s) (T.singleton c) <> s
+  d = padLeft (T.pack $ show day) '0' 2
+  filename = "./data/" <> show year <> "-" <> T.unpack d <> ".txt"
+  padLeft s c n = T.replicate (n - T.length s) (T.singleton c) <> s
+  errMsg = "Input data file not found: " <> filename
+  runPart p t = formatAoCAnswer (show $ p t, NoValue)
+  validated = year >= 2015 && day >= 1 && day <= 25
+  errMsgInvalidYear = "Invalid AoC Day " <> show year <> "-" <> T.unpack d
 
-getPartsFromAoCDay :: AOC_Day -> IO Parts
-getPartsFromAoCDay aocDay@(year, day)
-  | not . validated $ aocDay = pure (partDoesNotExist, partDoesNotExist)
-  | otherwise =
-      pure $ case year of
-        2015 -> AOC2015.getParts day
-        2023 -> AOC2023.getParts day
-        _ -> (partNotThereYet, partNotThereYet)
+getAoCDayParts :: AoCDay -> IO Parts
+getAoCDayParts (year, day) =
+  pure $ case year of
+    2015 -> AOC2015.getParts day
+    2023 -> AOC2023.getParts day
+    _ -> errMsgParts errMsgValidYear
  where
-  validated (y, d) = y >= 2015 && d >= 1 && d <= 25
-  partDoesNotExist = Part $ const "Doesn't exist"
-  partNotThereYet = Part $ const "Not there yet"
+  errMsgValidYear = "Year " <> show year <> " has not been attempted yet"
 
-formatAoCOutput :: ((String, Double), (String, Double)) -> T.Text -> IO ()
-formatAoCOutput ((part1, t1), (part2, t2)) day = do
-  printf $ "------ Day " <> T.unpack day <> " ------"
-  printf "\n"
-  printf "part1: %s (%0.9f sec)" part1 t1
-  printf "\n"
-  printf "part2: %s (%0.9f sec)" part2 t2
-  printf "\n\n"
+formatAoCAnswer :: AoCAnswer -> String
+formatAoCAnswer (p, t) = TL.unpack $
+  case t of
+    Value a -> format (text % "(" % fixed 2 % " sec)") (TL.pack p) a
+    NoValue -> format text (TL.pack p)
