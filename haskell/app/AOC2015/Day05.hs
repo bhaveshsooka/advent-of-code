@@ -20,6 +20,6 @@ part2 input = length $ filter predicate inputLines
   inputLines = T.lines input
   predicate l = hasRepeatedPair (T.unpack l) && hasRepeatingLetterWithGap (T.unpack l)
   hasRepeatedPair s = any (\i -> take 2 (drop i s) `elem` pairs (i + 2)) [0 .. length s - 2]
-    where
-      pairs start = [take 2 (drop j s) | j <- [start .. length s - 2]]
+   where
+    pairs start = [take 2 (drop j s) | j <- [start .. length s - 2]]
   hasRepeatingLetterWithGap s = any (\i -> s !! i == s !! (i + 2)) [0 .. length s - 3]
