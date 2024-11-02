@@ -22,5 +22,5 @@ data Timing
 
 type AoCAnswer = (String, Timing)
 
-errMsgParts :: String -> Parts
+errMsgParts :: forall a. (Show a) => a -> Parts
 errMsgParts s = (Part . const $ s, Part . const $ s)

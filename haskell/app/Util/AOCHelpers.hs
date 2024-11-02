@@ -6,7 +6,6 @@ module Util.AOCHelpers (
 
 import AOC2015.Module qualified as AOC2015
 import AOC2023.Module qualified as AOC2023
-import Data.Text qualified as T
 import Data.Text.IO qualified as TIO
 import Data.Text.Lazy qualified as TL
 import Formatting (fixed, format, text, (%))
@@ -25,18 +24,18 @@ printAoCDay (year, day) = do
         pure $ case inputTextResult of
           Left _ -> (errMsgNoData, errMsgNoData)
           Right a -> (runPart part1 a, runPart part2 a)
-  printf $ "------ Day " <> T.unpack d <> " ------"
+  printf $ "------ Day " <> d <> " ------"
   printf $ "\npart1: " <> p1
   printf $ "\npart2: " <> p2
   printf "\n\n"
  where
   validated = year >= 2015 && day >= 1 && day <= 25
-  d = padLeft (T.pack $ show day) '0' 2
-  filename = "./data/" <> show year <> "-" <> T.unpack d <> ".txt"
-  padLeft s c n = T.replicate (n - T.length s) (T.singleton c) <> s
+  d = padLeft (show day) '0' 2
+  filename = "./data/" <> show year <> "-" <> d <> ".txt"
+  padLeft s c n = replicate (n - length s) c <> s
   runPart p t = formatAoCAnswer (show $ p t, NoValue)
   errMsgNoData = "Input data file not found: " <> filename
-  errMsgInvalidYear = "Invalid AoC Day " <> show year <> "-" <> T.unpack d
+  errMsgInvalidYear = "Invalid AoC Day " <> show year <> "-" <> d
 
 getAoCDayParts :: AoCDay -> IO Parts
 getAoCDayParts (year, day) =
@@ -50,5 +49,5 @@ getAoCDayParts (year, day) =
 formatAoCAnswer :: AoCAnswer -> String
 formatAoCAnswer (p, t) = TL.unpack $
   case t of
-    Value a -> format (text % "(" % fixed 2 % " sec)") (TL.pack p) a
+    Value a -> format (text % " (" % fixed 2 % " sec)") (TL.pack p) a
     NoValue -> format text (TL.pack p)
