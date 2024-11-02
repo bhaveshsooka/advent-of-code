@@ -15,23 +15,20 @@ import System.IO.Error (tryIOError)
 import Text.Printf (printf)
 
 printAoCDay :: AoCDay -> IO ()
-printAoCDay (year, day) =
-  if not validated
-    then do
-      printf $ "------ Day " <> T.unpack d <> " ------"
-      printf $ "\npart1: " <> errMsgInvalidYear
-      printf $ "\npart2: " <> errMsgInvalidYear
-      printf "\n\n"
-    else do
-      (Part part1, Part part2) <- getAoCDayParts (year, day)
-      inputTextResult <- tryIOError $ TIO.readFile filename
-      (p1, p2) <- pure $ case inputTextResult of
-        Left _ -> (errMsg, errMsg)
-        Right a -> (runPart part1 a, runPart part2 a)
-      printf $ "------ Day " <> T.unpack d <> " ------"
-      printf $ "\npart1: " <> p1
-      printf $ "\npart2: " <> p2
-      printf "\n\n"
+printAoCDay (year, day) = do
+  (p1, p2) <-
+    if not validated
+      then pure (errMsgInvalidYear, errMsgInvalidYear)
+      else do
+        (Part part1, Part part2) <- getAoCDayParts (year, day)
+        inputTextResult <- tryIOError $ TIO.readFile filename
+        pure $ case inputTextResult of
+          Left _ -> (errMsg, errMsg)
+          Right a -> (runPart part1 a, runPart part2 a)
+  printf $ "------ Day " <> T.unpack d <> " ------"
+  printf $ "\npart1: " <> p1
+  printf $ "\npart2: " <> p2
+  printf "\n\n"
  where
   d = padLeft (T.pack $ show day) '0' 2
   filename = "./data/" <> show year <> "-" <> T.unpack d <> ".txt"
