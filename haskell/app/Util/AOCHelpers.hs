@@ -18,24 +18,28 @@ printAoCDay (year, day) = do
   (p1, p2) <-
     if not validated
       then pure (errMsgInvalidYear, errMsgInvalidYear)
-      else do
-        (Part part1, Part part2) <- getAoCDayParts (year, day)
-        inputTextResult <- tryIOError $ TIO.readFile filename
-        pure $ case inputTextResult of
-          Left _ -> (errMsgNoData, errMsgNoData)
-          Right a -> (runPart part1 a, runPart part2 a)
+      else runPart (year, day) filename
   printf $ "------ Day " <> d <> " ------"
   printf $ "\npart1: " <> p1
   printf $ "\npart2: " <> p2
   printf "\n\n"
  where
-  validated = year >= 2015 && day >= 1 && day <= 25
   d = padLeft (show day) '0' 2
   filename = "./data/" <> show year <> "-" <> d <> ".txt"
   padLeft s c n = replicate (n - length s) c <> s
-  runPart p t = formatAoCAnswer (show $ p t, NoValue)
-  errMsgNoData = "Input data file not found: " <> filename
+  validated = year >= 2015 && day >= 1 && day <= 25
   errMsgInvalidYear = "Invalid AoC Day " <> show year <> "-" <> d
+
+runPart :: AoCDay -> String -> IO (String, String)
+runPart (year, day) filename = do
+  (Part part1, Part part2) <- getAoCDayParts (year, day)
+  inputTextResult <- tryIOError $ TIO.readFile filename
+  pure $ case inputTextResult of
+    Left _ -> (errMsgNoData, errMsgNoData)
+    Right a -> (runPart' part1 a, runPart' part2 a)
+ where
+  runPart' p t = formatAoCAnswer (show $ p t, NoValue)
+  errMsgNoData = "Input data file not found: " <> filename
 
 getAoCDayParts :: AoCDay -> IO Parts
 getAoCDayParts (year, day) =
