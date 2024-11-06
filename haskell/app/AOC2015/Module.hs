@@ -11,10 +11,7 @@ import AOC2015.Day05 qualified as Day05
 import AOC2015.Day06 qualified as Day06
 import AOC2015.Day07 qualified as Day07
 import AOC2015.Day08 qualified as Day08
-import AOC2015.Day09 qualified as Day09
 import AOC2015.Day10 qualified as Day10
-import AOC2015.Day11 qualified as Day11
-import AOC2015.Day12 qualified as Day12
 import Model (Part (Part), Parts, errMsgParts)
 
 getParts :: Int -> Parts
@@ -28,10 +25,7 @@ getParts day =
     06 -> (Part Day06.part1, Part Day06.part2)
     07 -> (Part Day07.part1, Part Day07.part2)
     08 -> (Part Day08.part1, Part Day08.part2)
-    09 -> (Part Day09.part1, Part Day09.part2)
     10 -> (Part Day10.part1, Part Day10.part2)
-    11 -> (Part Day11.part1, Part Day11.part2)
-    12 -> (Part Day12.part1, Part Day12.part2)
     _ -> errMsgParts errMsg
  where
   errMsg = "Day " <> show day <> " for 2015 has not been attempted yet"
