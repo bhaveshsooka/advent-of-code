@@ -1,6 +1,6 @@
-module AOC2015.Module (
-  getParts,
-)
+module AOC2015.Module
+  ( getParts,
+  )
 where
 
 import AOC2015.Day01 qualified as Day01
@@ -27,5 +27,5 @@ getParts day =
     08 -> (Part Day08.part1, Part Day08.part2)
     10 -> (Part Day10.part1, Part Day10.part2)
     _ -> errMsgParts errMsg
- where
-  errMsg = "Day " <> show day <> " for 2015 has not been attempted yet"
+  where
+    errMsg = "Day " <> show day <> " for 2015 has not been attempted yet"

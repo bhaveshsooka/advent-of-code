@@ -1,7 +1,8 @@
-module AOC2015.Day10 (
-  part1,
-  part2,
-) where
+module AOC2015.Day10
+  ( part1,
+    part2,
+  )
+where
 
 import Data.Text qualified as T
 

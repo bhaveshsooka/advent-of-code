@@ -1,7 +1,8 @@
-module AOC2015.Day01 (
-  part1,
-  part2,
-) where
+module AOC2015.Day01
+  ( part1,
+    part2,
+  )
+where
 
 import Data.Text qualified as T
 
@@ -10,8 +11,8 @@ part1 input = sum $ floorDirections input
 
 part2 :: T.Text -> Int
 part2 input = (+ 1) $ length $ scanlWhile $ floorDirections input
- where
-  scanlWhile = takeWhile (/= (-1)) . scanl1 (+)
+  where
+    scanlWhile = takeWhile (/= (-1)) . scanl1 (+)
 
 calcNextFloor :: Char -> Int
 calcNextFloor c

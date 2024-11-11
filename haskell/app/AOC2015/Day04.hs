@@ -1,7 +1,8 @@
-module AOC2015.Day04 (
-  part1,
-  part2,
-) where
+module AOC2015.Day04
+  ( part1,
+    part2,
+  )
+where
 
 import Crypto.Hash.MD5 (hash)
 import Data.ByteString.Base16 (encode)
@@ -20,5 +21,5 @@ findNum input prefix num =
   if prefix `isPrefixOf` md5Hash
     then num
     else findNum input prefix $ num + 1
- where
-  md5Hash = encode . hash $ input <> (pack . show $ num)
+  where
+    md5Hash = encode . hash $ input <> (pack . show $ num)

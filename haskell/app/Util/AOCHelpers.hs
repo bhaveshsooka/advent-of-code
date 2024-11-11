@@ -1,8 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Util.AOCHelpers (
-  printAoCDay,
-) where
+module Util.AOCHelpers
+  ( printAoCDay,
+  )
+where
 
 import AOC2015.Module qualified as AOC2015
 import AOC2023.Module qualified as AOC2023
@@ -23,12 +24,12 @@ printAoCDay (year, day) = do
   printf $ "\npart1: " <> p1
   printf $ "\npart2: " <> p2
   printf "\n\n"
- where
-  d = padLeft (show day) '0' 2
-  filename = "./data/" <> show year <> "-" <> d <> ".txt"
-  padLeft s c n = replicate (n - length s) c <> s
-  validated = year >= 2015 && day >= 1 && day <= 25
-  errMsgInvalidYear = "Invalid AoC Day " <> show year <> "-" <> d
+  where
+    d = padLeft (show day) '0' 2
+    filename = "./data/" <> show year <> "-" <> d <> ".txt"
+    padLeft s c n = replicate (n - length s) c <> s
+    validated = year >= 2015 && day >= 1 && day <= 25
+    errMsgInvalidYear = "Invalid AoC Day " <> show year <> "-" <> d
 
 runPart :: AoCDay -> String -> IO (String, String)
 runPart (year, day) filename = do
@@ -37,9 +38,9 @@ runPart (year, day) filename = do
   pure $ case inputTextResult of
     Left _ -> (errMsgNoData, errMsgNoData)
     Right a -> (runPart' part1 a, runPart' part2 a)
- where
-  runPart' p t = formatAoCAnswer (show $ p t, NoValue)
-  errMsgNoData = "Input data file not found: " <> filename
+  where
+    runPart' p t = formatAoCAnswer (show $ p t, NoValue)
+    errMsgNoData = "Input data file not found: " <> filename
 
 getAoCDayParts :: AoCDay -> IO Parts
 getAoCDayParts (year, day) =
@@ -47,8 +48,8 @@ getAoCDayParts (year, day) =
     2015 -> AOC2015.getParts day
     2023 -> AOC2023.getParts day
     _ -> errMsgParts errMsgValidYear
- where
-  errMsgValidYear = "Year " <> show year <> " has not been attempted yet"
+  where
+    errMsgValidYear = "Year " <> show year <> " has not been attempted yet"
 
 formatAoCAnswer :: AoCAnswer -> String
 formatAoCAnswer (p, t) = TL.unpack $

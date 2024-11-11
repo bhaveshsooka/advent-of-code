@@ -1,21 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module AOC2023.Day01 (
-  part1,
-  part2,
-) where
+module AOC2023.Day01
+  ( part1,
+    part2,
+  )
+where
 
 import Data.Text qualified as T
 
 part1 :: T.Text -> Int
 part1 input = sum $ read <$> list
- where
-  list = extractFirstAndLast . numericString <$> T.lines input
+  where
+    list = extractFirstAndLast . numericString <$> T.lines input
 
 part2 :: T.Text -> Int
 part2 input = sum $ read <$> list
- where
-  list = (extractFirstAndLast <$> numericString) . replaceWordsWithDigits <$> T.lines input
+  where
+    list = (extractFirstAndLast <$> numericString) . replaceWordsWithDigits <$> T.lines input
 
 replaceWordsWithDigits :: T.Text -> T.Text
 replaceWordsWithDigits str =

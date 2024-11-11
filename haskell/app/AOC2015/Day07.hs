@@ -1,9 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module AOC2015.Day07 (
-  part1,
-  part2,
-) where
+module AOC2015.Day07
+  ( part1,
+    part2,
+  )
+where
 
 import Data.Bits (complement, shift, shiftR, (.&.), (.|.))
 import Data.Char (isDigit)
@@ -59,15 +60,15 @@ processSignals m cache = foldl (processSignal m) cache (keys m)
 processSignal :: Map T.Text Op -> Cache -> T.Text -> Cache
 processSignal m cache key
   | key `member` cache = cache
-  | otherwise =
-      let val = case fromJust $ lookup key m of
-            DIRECT w -> evalWire m cache w
-            AND w1 w2 -> evalWire m cache w1 .&. evalWire m cache w2
-            OR w1 w2 -> evalWire m cache w1 .|. evalWire m cache w2
-            LSHIFT w i -> evalWire m cache w `shift` i
-            RSHIFT w i -> evalWire m cache w `shiftR` i
-            NOT w -> complement (evalWire m cache w)
-       in insert key val cache
+  | otherwise = insert key val cache
+  where
+    val = case fromJust $ lookup key m of
+      DIRECT w -> evalWire m cache w
+      AND w1 w2 -> evalWire m cache w1 .&. evalWire m cache w2
+      OR w1 w2 -> evalWire m cache w1 .|. evalWire m cache w2
+      LSHIFT w i -> evalWire m cache w `shift` i
+      RSHIFT w i -> evalWire m cache w `shiftR` i
+      NOT w -> complement (evalWire m cache w)
 
 evalWire :: Map T.Text Op -> Cache -> Wire -> Word16
 evalWire _ _ (WInt i) = i
