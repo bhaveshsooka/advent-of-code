@@ -4,7 +4,6 @@ module AOC2015.Day06
   )
 where
 
-import Data.Functor (($>))
 import Data.Text qualified as T
 import Data.Vector.Unboxed (Vector, filter, generate, length, sum, (!), (//))
 import Text.Parsec qualified as P
@@ -21,9 +20,7 @@ data Coord = Coord Int Int deriving (Show, Eq, Ord)
 
 data Block = Block Coord Coord deriving (Show, Eq, Ord)
 
-data Operation = On | Off deriving (Show, Eq, Ord)
-
-data Instruction = Turn Operation Block | Toggle Block deriving (Show, Eq, Ord)
+data Instruction = TurnOn Block | TurnOff Block | Toggle Block deriving (Show, Eq, Ord)
 
 parseInstructions :: T.Text -> [Instruction]
 parseInstructions input = parseAoCInput input instructionsParser "instructionsParser"
@@ -31,10 +28,10 @@ parseInstructions input = parseAoCInput input instructionsParser "instructionsPa
     numParser = read <$> P.many1 P.digit
     coordParser = Coord <$> (numParser <* P.char ',') <*> numParser
     blockParser = Block <$> (coordParser <* P.string " through ") <*> coordParser
-    operationParser = P.choice $ P.try <$> [P.string "on" $> On, P.string "off" $> Off]
-    turnParser = Turn <$> (P.string "turn " *> operationParser <* P.space) <*> blockParser
+    turnOnParser = TurnOn <$> (P.string "turn on " *> blockParser)
+    turnOffParser = TurnOff <$> (P.string "turn off " *> blockParser)
     toggleParser = Toggle <$> (P.string "toggle " *> blockParser)
-    instructionParser = P.choice $ P.try <$> [turnParser, toggleParser]
+    instructionParser = P.choice $ P.try <$> [turnOnParser, turnOffParser, toggleParser]
     instructionsParser = P.many1 $ instructionParser <* P.optional P.newline
 
 solve :: [Instruction] -> Bool -> Int
@@ -52,12 +49,12 @@ applyInstructions brightness grid (instruction : instructions) =
   applyInstructions brightness (updateGrid (getBounds instruction) fn) instructions
   where
     fn val = case instruction of
-      Turn On _ -> if brightness then val + 1 else 1
-      Turn Off _ -> if brightness then max 0 (val - 1) else 0
+      TurnOn _ -> if brightness then val + 1 else 1
+      TurnOff _ -> if brightness then max 0 (val - 1) else 0
       Toggle _ -> if brightness then val + 2 else toggle val
 
-    getBounds (Turn On blk) = blk
-    getBounds (Turn Off blk) = blk
+    getBounds (TurnOn blk) = blk
+    getBounds (TurnOff blk) = blk
     getBounds (Toggle blk) = blk
 
     toggle 1 = 0
