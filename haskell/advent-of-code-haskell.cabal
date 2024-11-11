@@ -74,7 +74,7 @@ executable advent-of-code-haskell
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:      base, text, array, parallel, parsec,
+    build-depends:      base, text, vector, parallel, parsec,
                         base16-bytestring, utf8-string, bytestring, cryptohash-md5,
                         containers, criterion, formatting
 
