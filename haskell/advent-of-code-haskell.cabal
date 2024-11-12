@@ -89,7 +89,6 @@ executable advent-of-code-haskell
     , bytestring
     , containers
     , cryptohash-md5
-    , formatting
     , parsec
     , text
     , vector

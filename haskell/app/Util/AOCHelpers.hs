@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Util.AOCHelpers
   ( printAoCDay,
   )
@@ -8,8 +6,6 @@ where
 import AOC2015.Module qualified as AOC2015
 import AOC2023.Module qualified as AOC2023
 import Data.Text.IO qualified as TIO
-import Data.Text.Lazy qualified as TL
-import Formatting (fixed, format, text, (%))
 import Model (AoCAnswer, AoCDay, Part (Part), Parts, Timing (NoValue, Value), errMsgParts)
 import System.IO.Error (tryIOError)
 import Text.Printf (printf)
@@ -52,7 +48,7 @@ getAoCDayParts (year, day) =
     errMsgValidYear = "Year " <> show year <> " has not been attempted yet"
 
 formatAoCAnswer :: AoCAnswer -> String
-formatAoCAnswer (p, t) = TL.unpack $
+formatAoCAnswer (p, t) =
   case t of
-    Value a -> format (text % " (" % fixed 2 % " sec)") (TL.pack p) a
-    NoValue -> format text (TL.pack p)
+    Value a -> p <> " (" <> printf "%.9f" a <> " sec)"
+    NoValue -> p

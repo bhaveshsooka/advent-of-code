@@ -4,6 +4,7 @@ module Model
     Timing (..),
     Part (Part),
     Parts,
+    Year,
     errMsgParts,
   )
 where
