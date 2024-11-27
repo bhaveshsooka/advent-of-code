@@ -5,8 +5,8 @@ import Util.AOCHelpers (printAoCDay)
 
 main :: IO ()
 main = do
-  printYear 2015
-  printYear 2023
+  -- printYear 2015
+  -- printYear 2023
   putStrLn "Which year?"
   year <- readLn :: IO Int
   putStrLn "Which day?"

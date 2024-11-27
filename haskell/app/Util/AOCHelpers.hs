@@ -4,6 +4,7 @@ module Util.AOCHelpers
 where
 
 import AOC2015.Module qualified as AOC2015
+import AOC2018.Module qualified as AOC2018
 import AOC2023.Module qualified as AOC2023
 import Data.Text.IO qualified as TIO
 import Model (AoCAnswer, AoCDay, Part (Part), Parts, Timing (NoValue, Value), errMsgParts)
@@ -42,6 +43,7 @@ getAoCDayParts :: AoCDay -> IO Parts
 getAoCDayParts (year, day) =
   pure $ case year of
     2015 -> AOC2015.getParts day
+    2018 -> AOC2018.getParts day
     2023 -> AOC2023.getParts day
     _ -> errMsgParts errMsgValidYear
   where
