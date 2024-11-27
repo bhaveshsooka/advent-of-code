@@ -84,3 +84,5 @@ pytest_cache/
 
 # pipenv
 Pipfile.lock
+
+input*.txt
