@@ -77,6 +77,8 @@ executable advent-of-code-haskell
     AOC2018.Module
     AOC2023.Day01
     AOC2023.Module
+    AOC2024.Day01
+    AOC2024.Module
     Model
     Util.AOCHelpers
     Util.ParseHelpers

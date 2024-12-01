@@ -6,6 +6,7 @@ where
 import AOC2015.Module qualified as AOC2015
 import AOC2018.Module qualified as AOC2018
 import AOC2023.Module qualified as AOC2023
+import AOC2024.Module qualified as AOC2024
 import Data.Text.IO qualified as TIO
 import Model (AoCAnswer, AoCDay, Part (Part), Parts, Timing (NoValue, Value), errMsgParts)
 import System.IO.Error (tryIOError)
@@ -45,6 +46,7 @@ getAoCDayParts (year, day) =
     2015 -> AOC2015.getParts day
     2018 -> AOC2018.getParts day
     2023 -> AOC2023.getParts day
+    2024 -> AOC2024.getParts day
     _ -> errMsgParts errMsgValidYear
   where
     errMsgValidYear = "Year " <> show year <> " has not been attempted yet"
