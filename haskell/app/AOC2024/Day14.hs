@@ -4,11 +4,8 @@ module AOC2024.Day14
   )
 where
 
-import Data.Bifunctor qualified as BF
-import Data.List (group, sort)
 import Data.Map qualified as M
 import Data.Text qualified as T
-import Data.Vector qualified as V
 import Text.Parsec qualified as P
 import Util.ParseHelpers (parseAoCInput)
 
@@ -22,12 +19,9 @@ part1 input = M.foldrWithKey (\k v acc -> if k /= Mid then acc * length v else a
     (seconds, wide, tall) = (100, 101, 103)
 
 part2 :: T.Text -> Int
-part2 input = findSecondsForChristmasTree robotStats wide tall 0
+part2 input = findSecondsForChristmasTree (parseRobotStats input) wide tall 0
   where
-    xPositions = sort $ (\(Position x _) -> x) <$> newPositions
     (wide, tall) = (101, 103)
-    newPositions = getPosAfterX 1 wide tall <$> robotStats
-    robotStats = parseRobotStats input
 
 data Position = Position Int Int deriving (Show, Ord)
 
