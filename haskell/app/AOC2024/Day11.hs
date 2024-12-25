@@ -13,16 +13,9 @@ part1 input = length $ blinkMF 25 stones
     stones = parseStones input
 
 part2 :: T.Text -> Int
-part2 input =
-  foldl
-    ( \acc (Memo steps _ _) ->
-        if (steps !! (blinks - 1)) /= (-1)
-          then acc + (steps !! (blinks - 1))
-          else acc
-    )
-    0
-    memo
+part2 input = foldl foldFn 0 memo
   where
+    foldFn acc (Memo steps _ _) = if (steps !! (blinks - 1)) /= (-1) then acc + (steps !! (blinks - 1)) else acc
     blinks = 75
     memo = blinkMFMemo stones (createMemoTable blinks M.empty stones) (blinks, 0)
     stones = parseStones input
