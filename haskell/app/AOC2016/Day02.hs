@@ -7,7 +7,6 @@ where
 import Data.Map qualified as M
 import Data.Maybe (mapMaybe)
 import Data.Text qualified as T
-import Data.Vector qualified as V
 
 part1 :: T.Text -> String
 part1 input = concat $ mapMaybe (`M.lookup` keypad) passwordCoords
