@@ -78,6 +78,7 @@ executable advent-of-code-haskell
     AOC2023.Day01
     AOC2023.Day02
     AOC2023.Day03
+    AOC2023.Day04
     AOC2023.Module
     AOC2024.Day01
     AOC2024.Day02
@@ -111,6 +112,7 @@ executable advent-of-code-haskell
     , base16-bytestring
     , bytestring
     , containers
+    , unordered-containers
     , cryptohash-md5
     , parsec
     , text
