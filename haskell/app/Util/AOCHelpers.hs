@@ -24,7 +24,7 @@ printAoCDay (year, day) = do
   printf "\n\n"
   where
     d = padLeft (show day) '0' 2
-    filename = "./data/" <> show year <> "-" <> d <> ".txt"
+    filename = "./data/" <> show year <> "/" <> d <> ".txt"
     padLeft s c n = replicate (n - length s) c <> s
     validated = year >= 2015 && day >= 1 && day <= 25
     errMsgInvalidYear = "Invalid AoC Day " <> show year <> "-" <> d
