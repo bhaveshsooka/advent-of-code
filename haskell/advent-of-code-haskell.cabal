@@ -84,6 +84,8 @@ executable advent-of-code-haskell
     AOC2016.Module
     AOC2018.Day01
     AOC2018.Module
+    AOC2022.Day01
+    AOC2022.Module
     AOC2023.Day01
     AOC2023.Day02
     AOC2023.Day03
