@@ -18,7 +18,7 @@ showGrid :: (Grid, Int) -> String
 showGrid (grid, rowLen) = foldl foldFn "" rows
   where
     foldFn acc row = acc <> xx row <> "\n"
-    xx row = snd <$> V.toList (V.filter (\(Coord x _, c) -> x == row) grid)
+    xx row = snd <$> V.toList (V.filter (\(Coord x _, _) -> x == row) grid)
     rows = [0 .. rowLen - 1]
 
 newGrid :: Int -> Int -> Char -> Grid
