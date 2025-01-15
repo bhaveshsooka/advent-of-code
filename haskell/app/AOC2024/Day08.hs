@@ -4,118 +4,52 @@ module AOC2024.Day08
   )
 where
 
-import Data.Bifunctor qualified as BF
-import Data.List (nub, tails)
-import Data.Map qualified as M
+import Data.List (nub)
 import Data.Text qualified as T
 import Data.Vector qualified as V
+import Util.GridUtils.Coord (Coord (Coord))
+import Util.GridUtils.Grid (GridInfo, parseGrid)
 
 part1 :: T.Text -> Int
-part1 input = length . nub $ foldr (flip (++)) [] (M.elems antiNodes)
+part1 input = (length . nub) antinodes
   where
-    antiNodes = M.map (getAntiNodes gridLen) pairsOfAntennas
-    pairsOfAntennas = M.map pairs antennas
-    gridLen = length $ T.lines input
-    antennas = buildAntenna grid
-    grid = parseGrid input
+    antinodes = concatMap (calcAntinodes gridInfo False [] 1) antennaePairs
+    antennaePairs =
+      [ (c1, c2)
+        | (i1, (c1, ch1)) <- indexedGrid,
+          (i2, (c2, ch2)) <- indexedGrid,
+          ch1 /= '.' && ch2 /= '.' && ch1 == ch2 && c1 /= c2 && i1 < i2
+      ]
+    indexedGrid = V.toList $ V.indexed grid
+    gridInfo@(grid, _, _) = parseGrid id input
 
 part2 :: T.Text -> Int
-part2 input = length . nub $ foldr (flip (++)) [] (M.elems antiNodes)
+part2 input = (length . nub) antinodes
   where
-    antiNodes = M.map (getAllAntiNodes gridLen) pairsOfAntennas
-    pairsOfAntennas = M.map pairs antennas
-    gridLen = length $ T.lines input
-    antennas = buildAntenna grid
-    grid = parseGrid input
+    antinodes = concatMap (calcAntinodes gridInfo True [] rows) antennaePairs
+    antennaePairs =
+      [ (c1, c2)
+        | (i1, (c1, ch1)) <- indexedGrid,
+          (i2, (c2, ch2)) <- indexedGrid,
+          ch1 /= '.' && ch2 /= '.' && ch1 == ch2 && c1 /= c2 && i1 < i2
+      ]
+    indexedGrid = V.toList $ V.indexed grid
+    gridInfo@(grid, rows, _) = parseGrid id input
 
-data Coord = Coord Int Int deriving (Show, Ord)
+type CityMapInfo = GridInfo Char
 
-instance Eq Coord where
-  (==) :: Coord -> Coord -> Bool
-  (Coord x y) == (Coord x' y') = x == x' && y == y'
-
-type Grid = V.Vector (Coord, Char)
-
-type Antenna = M.Map Char [Coord]
-
-getAllAntiNodes :: Int -> [(Coord, Coord)] -> [Coord]
-getAllAntiNodes gridLen coordPairs = go coordPairs []
+calcAntinodes :: CityMapInfo -> Bool -> [Coord] -> Int -> (Coord, Coord) -> [Coord]
+calcAntinodes gridInfo includePair acc factor (c1@(Coord x1 y1), c2@(Coord x2 y2)) =
+  if factor == 0
+    then if includePair then c1 : c2 : acc else acc
+    else case newAntinodes of
+      [] -> calcAntinodes gridInfo includePair acc (factor - 1) (c1, c2)
+      antinodes -> calcAntinodes gridInfo includePair (antinodes ++ acc) (factor - 1) (c1, c2)
   where
-    go :: [(Coord, Coord)] -> [Coord] -> [Coord]
-    go [] acc = acc
-    go ((c1, c2) : rest) acc = [c1, c2] ++ go rest (acc ++ calculateAllAntiNodes gridLen (c1, c2))
-
-getAntiNodes :: Int -> [(Coord, Coord)] -> [Coord]
-getAntiNodes gridLen coordPairs = go coordPairs []
-  where
-    go :: [(Coord, Coord)] -> [Coord] -> [Coord]
-    go [] acc = acc
-    go ((c1, c2) : rest) acc = go rest (acc ++ calculateAntiNode gridLen (c1, c2))
-
-pairs :: [a] -> [(a, a)]
-pairs l = [(x, y) | (x : ys) <- tails l, y <- ys]
-
-calculateAllAntiNodes :: Int -> (Coord, Coord) -> [Coord]
-calculateAllAntiNodes gridLen (c1@(Coord x1 y1), Coord x2 y2) =
-  if null antiNodesList
-    then antiNodesList
-    else
-      antiNodesList
-        ++ calculateAllAntiNodes gridLen (antinode1, c1)
-        ++ calculateAllAntiNodes gridLen (c1, antinode2)
-  where
-    antiNodesList = filter (inBounds gridLen) [antinode1, antinode2]
-    xDiff = abs $ x2 - x1
-    yDiff = abs $ y2 - y1
-    antinode1
-      | x1 < x2 =
-          if y1 < y2
-            then Coord (x1 - xDiff) (y1 - yDiff)
-            else Coord (x1 - xDiff) (y1 + yDiff)
-      | y1 < y2 = Coord (x1 + xDiff) (y1 - yDiff)
-      | otherwise = Coord (x1 + xDiff) (y1 + yDiff)
-    antinode2
-      | x1 < x2 =
-          if y1 < y2
-            then Coord (x2 + xDiff) (y2 + yDiff)
-            else Coord (x2 + xDiff) (y2 - yDiff)
-      | y1 < y2 = Coord (x2 - xDiff) (y2 + yDiff)
-      | otherwise = Coord (x2 - xDiff) (y2 - yDiff)
-
-calculateAntiNode :: Int -> (Coord, Coord) -> [Coord]
-calculateAntiNode gridLen (Coord x1 y1, Coord x2 y2) = filter (inBounds gridLen) [antinode1, antinode2]
-  where
-    xDiff = abs $ x2 - x1
-    yDiff = abs $ y2 - y1
-    antinode1
-      | x1 < x2 =
-          if y1 < y2
-            then Coord (x1 - xDiff) (y1 - yDiff)
-            else Coord (x1 - xDiff) (y1 + yDiff)
-      | y1 < y2 = Coord (x1 + xDiff) (y1 - yDiff)
-      | otherwise = Coord (x1 + xDiff) (y1 + yDiff)
-    antinode2
-      | x1 < x2 =
-          if y1 < y2
-            then Coord (x2 + xDiff) (y2 + yDiff)
-            else Coord (x2 + xDiff) (y2 - yDiff)
-      | y1 < y2 = Coord (x2 - xDiff) (y2 + yDiff)
-      | otherwise = Coord (x2 - xDiff) (y2 - yDiff)
-
-buildAntenna :: Grid -> Antenna
-buildAntenna grid = M.filterWithKey (\k _ -> k /= '.') inverted
-  where
-    inverted = M.fromListWith (++) $ invertElem <$> V.toList grid
-    invertElem (Coord x y, c) = (c, [Coord x y])
-
-inBounds :: Int -> Coord -> Bool
-inBounds gridLen (Coord x y) = x >= 0 && x < gridLen && y >= 0 && y < gridLen
-
-parseGrid :: T.Text -> Grid
-parseGrid input = go (T.lines input) V.empty 0
-  where
-    go :: [T.Text] -> Grid -> Int -> Grid
-    go [] acc _ = acc
-    go (x : xs) acc row = go xs (acc V.++ V.fromList columns) (row + 1)
-      where
-        columns = BF.first (Coord row) <$> zip [0 ..] (T.unpack x)
+    inBounds (Coord x y) = x >= 0 && x < rows && y >= 0 && y < cols
+    newAntinodes = filter inBounds $ if y1 < y2 then diag1 else diag2
+    diag1 = [Coord (x1 - xDiff) (y1 - yDiff), Coord (x2 + xDiff) (y2 + yDiff)]
+    diag2 = [Coord (x2 + xDiff) (y2 - yDiff), Coord (x1 - xDiff) (y1 + yDiff)]
+    xDiff = factor * abs (x2 - x1)
+    yDiff = factor * abs (y2 - y1)
+    (_, rows, cols) = gridInfo
