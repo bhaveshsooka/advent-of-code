@@ -15,7 +15,7 @@ part1 input = length $ pathOf3 g
     g = parseConnections input
 
 part2 :: T.Text -> Int
-part2 input = 0
+part2 _input = 0
 
 type Label = T.Text
 

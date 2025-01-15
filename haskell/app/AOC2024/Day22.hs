@@ -17,7 +17,7 @@ part1 input = sum secretNumbers2000
     secretNumbers = parseSecretNumbers input
 
 part2 :: T.Text -> Int
-part2 input = 0
+part2 _input = 0
 
 data Op = Mix | Prune deriving (Show, Eq, Ord)
 

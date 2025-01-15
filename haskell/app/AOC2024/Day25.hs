@@ -14,7 +14,7 @@ part1 input = length $ filter id $ tryAKey <$> keyLockPairs
     (keys, locks) = parseKeysAndLocks input
 
 part2 :: T.Text -> Int
-part2 input = 0
+part2 _input = 0
 
 parseKeysAndLocks :: T.Text -> ([[Int]], [[Int]])
 parseKeysAndLocks input = (makeKeyOrLock <$> keyGrids, makeKeyOrLock <$> lockGrids)

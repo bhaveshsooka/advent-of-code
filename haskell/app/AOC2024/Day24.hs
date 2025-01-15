@@ -17,7 +17,7 @@ part1 input = zGatesToDec $ processGates memo gates
     (memo, gates) = parseWiresAndGates input
 
 part2 :: T.Text -> Int
-part2 input = 0
+part2 _input = 0
 
 type Label = String
 
