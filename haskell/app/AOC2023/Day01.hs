@@ -33,6 +33,6 @@ replaceWordsWithDigits str = foldr (\(old, new) s -> T.replace old new s) str re
       ]
 
 extractFirstAndLast :: T.Text -> String
-extractFirstAndLast str = T.unpack $ T.take 1 s <> T.drop (T.length s - 1) s
+extractFirstAndLast str = [T.head s, T.last s]
   where
     s = T.filter isDigit str

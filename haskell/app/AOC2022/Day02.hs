@@ -49,10 +49,6 @@ whatILose 'Y' = 'C'
 whatILose 'Z' = 'A'
 whatILose _ = error "Invalid input"
 
-notP :: P -> P
-notP P1 = P2
-notP P2 = P1
-
 shapeScore :: P -> Char -> Int
 shapeScore p shape = case p of
   P1 -> shapeScore' shape

@@ -7,24 +7,25 @@ where
 import Data.Text qualified as T
 import Data.Vector qualified as V
 import Text.Parsec qualified as P
-import Util.GridHelpers (Coord (Coord), Grid, newGrid, showGrid)
+import Util.GridUtils.Coord (Coord (..))
+import Util.GridUtils.Grid ( Grid, showGrid, newGrid )
 import Util.ParseHelpers (parseAoCInput)
 
 part1 :: T.Text -> Int
-part1 input = foldr (\(_, c) acc -> if c == '#' then acc + 1 else acc) 0 finalGrid
+part1 input = V.foldr (\(_, c) acc -> if c == '#' then acc + 1 else acc) 0 finalGrid
   where
-    finalGrid = foldl (\acc op -> processOperation (acc, rowLen, colLen) op) grid $ parseOperations input
-    rowLen = 50
-    colLen = 6
-    grid = newGrid rowLen colLen '.'
+    finalGrid = foldl (\acc op -> processOperation (acc, cols, rows) op) grid $ parseOperations input
+    cols = 50
+    rows = 6
+    grid = newGrid cols rows '.'
 
 part2 :: T.Text -> String
-part2 input = showGrid (finalGrid, colLen)
+part2 input = showGrid show (finalGrid, rows)
   where
-    finalGrid = foldl (\acc op -> processOperation (acc, rowLen, colLen) op) grid $ parseOperations input
-    rowLen = 50
-    colLen = 6
-    grid = newGrid rowLen colLen '.'
+    finalGrid = foldl (\acc op -> processOperation (acc, cols, rows) op) grid $ parseOperations input
+    cols = 50
+    rows = 6
+    grid = newGrid cols rows '.'
 
 data Operation
   = On Int Int
@@ -32,8 +33,10 @@ data Operation
   | RotateColumn Int Int
   deriving (Show)
 
-processOperation :: (Grid, Int, Int) -> Operation -> Grid
-processOperation (grid, rowLen, _) (On cols rows) = grid V.// [(x * rowLen + y, (Coord x y, '#')) | x <- [0 .. rows - 1], y <- [0 .. cols - 1]]
+processOperation :: (Grid Char, Int, Int) -> Operation -> Grid Char
+processOperation (grid, rowLen, _) (On cols rows) = grid V.// newCoords
+  where
+    newCoords = [(x * rowLen + y, (Coord x y, '#')) | x <- [0 .. rows - 1], y <- [0 .. cols - 1]]
 processOperation (grid, rowLen, _) (RotateRow x by) = grid V.// (rotateFn <$> currentCoords)
   where
     rotateFn (Coord x' y, c) = (x' * rowLen + newY y, (Coord x' (newY y), c))

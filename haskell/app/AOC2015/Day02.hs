@@ -10,18 +10,14 @@ import Text.Parsec qualified as P
 import Util.ParseHelpers (parseAoCInput)
 
 part1 :: T.Text -> Int
-part1 input = sum $ zipWith (+) presentSurfaceAreas smallestSides
+part1 input = foldr (\b acc -> acc + surfaceArea b + smallestSide b) 0 $ parseDimensionsList input
   where
-    presentSurfaceAreas = surfaceArea <$> parseDimensionsList input
-    smallestSides = smallestSide <$> parseDimensionsList input
-    surfaceArea (Box l w h) = 2 * (area l w + area w h + area l h)
-    smallestSide (Box l w h) = minimum [area l w, area w h, area h l]
+    surfaceArea (Box l w h) = 2 * (l * w + w * h + l * h)
+    smallestSide (Box l w h) = minimum [l * w, w * h, h * l]
 
 part2 :: T.Text -> Int
-part2 input = sum $ zipWith (+) wrapRibbonRequired bowRibbonRequired
+part2 input = foldr (\b acc -> acc + ribbonForWrap b + ribbonForBow b) 0 $ parseDimensionsList input
   where
-    wrapRibbonRequired = ribbonForWrap <$> parseDimensionsList input
-    bowRibbonRequired = ribbonForBow <$> parseDimensionsList input
     ribbonForBow (Box l w h) = l * w * h
     ribbonForWrap (Box l w h) = (2 * minimum [l, w, h]) + (2 * sort [l, w, h] !! 1)
 
@@ -33,6 +29,3 @@ parseDimensionsList input = parseAoCInput input dimensionsListParser "dimensions
     numParser = read <$> P.many1 P.digit
     dimensionsParser = Box <$> numParser <* P.char 'x' <*> numParser <* P.char 'x' <*> numParser
     dimensionsListParser = P.many1 $ dimensionsParser <* P.optional P.newline
-
-area :: Int -> Int -> Int
-area l w = l * w

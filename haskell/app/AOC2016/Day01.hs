@@ -6,56 +6,50 @@ where
 
 import Data.Text qualified as T
 import Text.Parsec qualified as P
+import Util.GridUtils.Coord (Coord (Coord), manhattanDistance)
+import Util.GridUtils.DirectionVonNeumann (Direction (..))
 import Util.ParseHelpers (parseAoCInput)
-import Prelude hiding (Left, Right)
 
 part1 :: T.Text -> Int
-part1 input = manhattanDistance start end
+part1 input = manhattanDistance (Coord 0 0) $ fst $ last path
   where
-    end = fst $ last path
-    manhattanDistance (Coord x1 y1) (Coord x2 y2) = abs (x1 - x2) + abs (y1 - y2)
-    path = foldl foldFn [(start, startDir)] turns
-    foldFn acc turn = acc ++ drop 1 (processTurn (last acc) turn)
-    (start, startDir) = (Coord 0 0, Up)
-    turns = parseTurns input
+    path = foldl pathBuilder [(Coord 0 0, N)] $ parseTurns input
 
 part2 :: T.Text -> Int
-part2 input = manhattanDistance start end
+part2 input = manhattanDistance (Coord 0 0) end
   where
     end = findRepeat $ fst <$> path
-    manhattanDistance (Coord x1 y1) (Coord x2 y2) = abs (x1 - x2) + abs (y1 - y2)
-    path = foldl foldFn [(start, startDir)] turns
-    foldFn acc turn = acc ++ drop 1 (processTurn (last acc) turn)
-    (start, startDir) = (Coord 0 0, Up)
-    turns = parseTurns input
+    path = foldl pathBuilder [(Coord 0 0, N)] $ parseTurns input
+
+    findRepeat [] = error "no repeat"
+    findRepeat (x : xs) = if x `elem` xs then x else findRepeat xs
 
 data Turn = R Int | L Int deriving (Show, Eq)
 
-data Direction = Up | Down | Left | Right deriving (Show, Eq)
+type Turns = [Turn]
 
-data Coord = Coord Int Int deriving (Show, Eq)
+type PathElem = (Coord, Direction)
 
-findRepeat :: [Coord] -> Coord
-findRepeat [] = error "no repeat"
-findRepeat (x : xs) =
-  if x `elem` xs
-    then x
-    else findRepeat xs
+type Path = [PathElem]
 
-processTurn :: (Coord, Direction) -> Turn -> [(Coord, Direction)]
-processTurn (Coord x y, d) turn = case (d, turn) of
-  (Up, R n) -> [(Coord x (y + i), Right) | i <- [0 .. n]]
-  (Up, L n) -> [(Coord x (y - i), Left) | i <- [0 .. n]]
-  (Down, R n) -> [(Coord x (y - i), Left) | i <- [0 .. n]]
-  (Down, L n) -> [(Coord x (y + i), Right) | i <- [0 .. n]]
-  (Left, R n) -> [(Coord (x - i) y, Up) | i <- [0 .. n]]
-  (Left, L n) -> [(Coord (x + i) y, Down) | i <- [0 .. n]]
-  (Right, R n) -> [(Coord (x + i) y, Down) | i <- [0 .. n]]
-  (Right, L n) -> [(Coord (x - i) y, Up) | i <- [0 .. n]]
+pathBuilder :: Path -> Turn -> Path
+pathBuilder acc turn = acc ++ drop 1 (turnAndStep (last acc))
+  where
+    turnAndStep (Coord x y, d) = case (d, turn) of
+      (N, R n) -> [(Coord x (y + i), E) | i <- [0 .. n]]
+      (N, L n) -> [(Coord x (y - i), W) | i <- [0 .. n]]
+      (E, R n) -> [(Coord (x + i) y, S) | i <- [0 .. n]]
+      (E, L n) -> [(Coord (x - i) y, N) | i <- [0 .. n]]
+      (S, R n) -> [(Coord x (y - i), W) | i <- [0 .. n]]
+      (S, L n) -> [(Coord x (y + i), E) | i <- [0 .. n]]
+      (W, R n) -> [(Coord (x - i) y, N) | i <- [0 .. n]]
+      (W, L n) -> [(Coord (x + i) y, S) | i <- [0 .. n]]
 
-parseTurns :: T.Text -> [Turn]
+parseTurns :: T.Text -> Turns
 parseTurns input = parseAoCInput input turnsParser "turnsParser"
   where
     numParser = read <$> P.many1 P.digit
-    turnParser = R <$> (P.string "R" *> numParser) P.<|> L <$> (P.string "L" *> numParser)
-    turnsParser = P.many1 (turnParser <* P.optional (P.string ", "))
+    rParser = R <$> (P.string "R" *> numParser)
+    lParser = L <$> (P.string "L" *> numParser)
+    turnParser = P.choice $ P.try <$> [rParser, lParser]
+    turnsParser = P.many1 $ turnParser <* P.optional (P.string ", ")

@@ -12,17 +12,13 @@ part1 :: T.Text -> Int
 part1 input = sum (T.length <$> T.lines input) - sum innerLength
   where
     innerLength = countChars 0 . replaceProblems . T.drop 1 . T.dropEnd 1 <$> T.lines input
+    replaceProblems = T.replace "\\\\" "." . T.replace "\"" "."
 
 part2 :: T.Text -> Int
 part2 input = sum inverseInnerLength - sum (T.length <$> T.lines input)
   where
     inverseInnerLength = (+) 2 . T.length . addProblems <$> T.lines input
-
-replaceProblems :: T.Text -> T.Text
-replaceProblems = T.replace "\\\\" "." . T.replace "\"" "."
-
-addProblems :: T.Text -> T.Text
-addProblems = T.concatMap (\c -> if c == '"' || c == '\\' then "\\" <> T.pack [c] else T.pack [c])
+    addProblems = T.concatMap (\c -> if c == '"' || c == '\\' then "\\" <> T.pack [c] else T.pack [c])
 
 countChars :: Int -> T.Text -> Int
 countChars acc s =

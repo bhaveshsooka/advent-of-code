@@ -9,25 +9,16 @@ import Data.List (isInfixOf, tails)
 import Data.Text qualified as T
 
 part1 :: T.Text -> Int
-part1 input = length . findAbbAs $ parseBlocks input
+part1 input = length . filter findAbbAs $ parseBlocks input
   where
-    findAbbAs = filter $ \blocks -> not (any isABBA ([s | H s <- blocks])) && any isABBA [s | S s <- blocks]
+    findAbbAs blocks = not (any isABBA ([s | H s <- blocks])) && any isABBA [s | S s <- blocks]
 
 part2 :: T.Text -> Int
-part2 input = length . findSSLs $ parseBlocks input
+part2 input = length . filter findSSLs $ parseBlocks input
   where
-    findSSLs = filter $ \blocks -> do
-      let hypers = [s | H s <- blocks]
-      or
-        [ any (isInfixOf [b, a, b]) hypers
-          | S s <- blocks,
-            [a, b, _] <- abasOf s
-        ]
+    findSSLs blocks = or [any (isInfixOf [b, a, b]) [s | H s <- blocks] | S str <- blocks, [a, b, _] <- abasOf str]
 
-data Block a
-  = S a
-  | H a
-  deriving (Show, Eq, Functor)
+data Block a = S a | H a
 
 isABBA :: String -> Bool
 isABBA = any ((\x -> length x == 4 && good x) . take 4) . tails

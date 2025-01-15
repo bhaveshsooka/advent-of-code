@@ -7,18 +7,12 @@ where
 import Data.Text qualified as T
 
 part1 :: T.Text -> Int
-part1 input = sum $ floorDirections input
+part1 input = sum $ parseFloorDirections input
 
 part2 :: T.Text -> Int
-part2 input = (+ 1) $ length $ scanlWhile $ floorDirections input
+part2 input = (+ 1) . length $ scanlUntil $ parseFloorDirections input
   where
-    scanlWhile = takeWhile (/= (-1)) . scanl1 (+)
+    scanlUntil = takeWhile (/= (-1)) . scanl1 (+)
 
-calcNextFloor :: Char -> Int
-calcNextFloor c
-  | c == '(' = 1
-  | c == ')' = -1
-  | otherwise = 0
-
-floorDirections :: T.Text -> [Int]
-floorDirections input = calcNextFloor <$> T.unpack input
+parseFloorDirections :: T.Text -> [Int]
+parseFloorDirections = T.foldr (\c acc -> if c == '(' then 1 : acc else (-1) : acc) []

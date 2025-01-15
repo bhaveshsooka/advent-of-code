@@ -21,7 +21,7 @@ part1 input = sum $ getPoints <$> scratchCards
 part2 :: T.Text -> Int
 part2 input = sum cardCounts
   where
-    cardCounts = calcTotalScratchCards initalScratchCardsCount scratchCards
+    cardCounts = foldl totalScratchCardsFold initalScratchCardsCount scratchCards
     initalScratchCardsCount = M.fromList $ (\(ScratchCard cardId _ _) -> (cardId, 1)) <$> scratchCards
     scratchCards = parseScratchCards input
 
@@ -31,15 +31,14 @@ type ScratchCards = [ScratchCard]
 
 type ScratchCardsCount = M.HashMap Int Int
 
-calcTotalScratchCards :: ScratchCardsCount -> ScratchCards -> ScratchCardsCount
-calcTotalScratchCards acc [] = acc
-calcTotalScratchCards acc ((ScratchCard cardId wns ns) : scs) = case acc M.!? cardId of
-  Nothing -> calcTotalScratchCards acc scs
-  Just cardCount -> calcTotalScratchCards (foldr foldFn acc [0 .. cardCount - 1]) scs
+totalScratchCardsFold :: ScratchCardsCount -> ScratchCard -> ScratchCardsCount
+totalScratchCardsFold scCounts (ScratchCard cardId wns ns) =
+  case scCounts M.!? cardId of
+    Nothing -> scCounts
+    Just cardCount -> foldr countWinningNumbersFold scCounts [0 .. cardCount - 1]
   where
-    foldFn _ acc' = foldl foldFn' acc' [1 .. length myWinningNumbers]
-    foldFn' acc'' j = M.insertWith (+) (cardId + j) 1 acc''
-    myWinningNumbers = wns `intersect` ns
+    countWinningNumbersFold _ acc = foldr updateScratchCardsCountFold acc [1 .. length $ wns `intersect` ns]
+    updateScratchCardsCountFold j = M.insertWith (+) (cardId + j) 1
 
 parseScratchCards :: T.Text -> ScratchCards
 parseScratchCards input = parseAoCInput input scratchCardsParser "scratchCardsParser"

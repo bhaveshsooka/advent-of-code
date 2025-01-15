@@ -4,83 +4,59 @@ module AOC2024.Day06
   )
 where
 
+import Data.Maybe (fromMaybe)
 import Data.Text qualified as T
 import Data.Vector qualified as V
-import Prelude hiding (Left, Right)
+import Util.GridUtils.Coord (Coord (Coord))
+import Util.GridUtils.DirectionVonNeumann (Direction (..), turnRight)
+import Util.GridUtils.Grid (GridInfo, parseGrid)
 
 part1 :: T.Text -> Int
-part1 input = length . fst $ findVisited (grid, gridLen) Up start V.empty
+part1 input = length . snd $ findVisited gridInfo N start V.empty
   where
-    gridLen = length $ T.lines input
-    start = maybe (Coord (-1) (-1)) getCoord (V.findIndex (== '^') grid)
-    grid = parseGrid input V.empty 0
-    getCoord i = Coord (i `div` gridLen) (i `mod` gridLen)
+    start = fst $ grid V.! fromMaybe (-1) (V.findIndex ((== '^') . snd) grid)
+    gridInfo@(grid, _, _) = parseGrid id input
 
 part2 :: T.Text -> Int
-part2 input = length $ V.filter snd loops
+part2 input = foldr countLoopsFold 0 (V.tail originalPath)
   where
-    loops = (\g -> findVisited (g, gridLen) Up start V.empty) <$> newReplacedGrids
-    newReplacedGrids = V.filter (V.elem '^') $ changeOneValue gridLen grid . fst <$> originalPath
-    originalPath = fst $ findVisited (grid, gridLen) Up start V.empty
-    gridLen = length $ T.lines input
-    start = maybe (Coord (-1) (-1)) getCoord (V.findIndex (== '^') grid)
-    grid = parseGrid input V.empty 0
-    getCoord i = Coord (i `div` gridLen) (i `mod` gridLen)
+    newReplacedGrids = V.filter (V.elem '^' . V.map snd) $ changeOneValue . fst <$> originalPath
+    countLoopsFold (c, _) acc =
+      if fst (findVisited (changeOneValue c, rows, cols) N start V.empty)
+        then acc + 1
+        else acc
+    originalPath = snd $ findVisited gridInfo N start V.empty
+    start = fst $ grid V.! fromMaybe (-1) (V.findIndex ((== '^') . snd) grid)
+    changeOneValue c@(Coord x y) = grid V.// [(x * rows + y, (c, '#'))]
+    gridInfo@(grid, rows, cols) = parseGrid id input
 
-data Coord = Coord Int Int deriving (Show, Ord)
-
-instance Eq Coord where
-  (==) :: Coord -> Coord -> Bool
-  (Coord x y) == (Coord x' y') = x == x' && y == y'
-
-type Grid = V.Vector Char
+type FloorPlanInfo = GridInfo Char
 
 type Visited = V.Vector (Coord, Direction)
 
-data Direction = Up | Down | Left | Right deriving (Show, Eq)
+type IsLoop = Bool
 
-findVisited :: (Grid, Int) -> Direction -> Coord -> Visited -> (Visited, Bool)
-findVisited (grid, gridLen) dir c visited =
-  if not (inBounds newCoord gridLen)
-    then (visited V.++ V.singleton (c, dir), False)
-    else case grid V.!? newCoordPos of
-      Just a -> case a of
-        '#' -> findVisited (grid, gridLen) (changeDir dir) c visited
-        _ ->
-          if any (\e -> fst e == c) visited
-            then
-              if (c, dir) `elem` visited
-                then (visited V.++ V.singleton (c, dir), True)
-                else findVisited (grid, gridLen) dir newCoord visited
-            else findVisited (grid, gridLen) dir newCoord (visited V.++ V.singleton (c, dir))
-      Nothing -> (visited V.++ V.singleton (c, dir), False)
+findVisited :: FloorPlanInfo -> Direction -> Coord -> Visited -> (IsLoop, Visited)
+findVisited gridInfo@(grid, rows, cols) dir c visited =
+  if not $ inBounds newCoord
+    then (False, newVisited)
+    else case grid V.!? (nx * rows + ny) of
+      Just (_, '#') -> findVisited gridInfo (turnRight dir) c visited
+      Just _ ->
+        if any ((== c) . fst) visited
+          then
+            if (c, dir) `elem` visited
+              then (True, newVisited)
+              else findVisited gridInfo dir newCoord visited
+          else findVisited gridInfo dir newCoord newVisited
+      Nothing -> (False, newVisited)
   where
-    newCoordPos = getPos newCoord
-    newCoord = applyDelta dir c
-    getPos (Coord x y) = x * gridLen + y
-
-inBounds :: Coord -> Int -> Bool
-inBounds (Coord x y) gridLen = x >= 0 && x < gridLen && y >= 0 && y < gridLen
-
-changeOneValue :: Int -> Grid -> Coord -> Grid
-changeOneValue gridLen grid (Coord x y) = grid V.// [(x * gridLen + y, '#')]
-
-changeDir :: Direction -> Direction
-changeDir Up = Right
-changeDir Right = Down
-changeDir Down = Left
-changeDir Left = Up
+    newCoord@(Coord nx ny) = applyDelta dir c
+    inBounds (Coord x y) = x >= 0 && x < rows && y >= 0 && y < cols
+    newVisited = visited V.++ V.singleton (c, dir)
 
 applyDelta :: Direction -> Coord -> Coord
-applyDelta Up (Coord x y) = Coord (x - 1) y
-applyDelta Down (Coord x y) = Coord (x + 1) y
-applyDelta Left (Coord x y) = Coord x (y - 1)
-applyDelta Right (Coord x y) = Coord x (y + 1)
-
-parseGrid :: T.Text -> Grid -> Int -> Grid
-parseGrid input acc gridLen =
-  if gridLen == length (T.lines input)
-    then acc
-    else parseGrid input (acc V.++ V.fromList cols) (gridLen + 1)
-  where
-    cols = T.unpack $ T.lines input !! gridLen
+applyDelta N (Coord x y) = Coord (x - 1) y
+applyDelta S (Coord x y) = Coord (x + 1) y
+applyDelta W (Coord x y) = Coord x (y - 1)
+applyDelta E (Coord x y) = Coord x (y + 1)

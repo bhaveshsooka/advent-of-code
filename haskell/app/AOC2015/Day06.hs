@@ -5,61 +5,44 @@ module AOC2015.Day06
 where
 
 import Data.Text qualified as T
-import Data.Vector.Unboxed (Vector, filter, generate, length, sum, (!), (//))
+import Data.Vector.Unboxed qualified as V
 import Text.Parsec qualified as P
+import Util.GridUtils.Coord (Block, Coord (..))
+import Util.GridUtils.Grid (UnboxedGrid)
 import Util.ParseHelpers (parseAoCInput)
-import Prelude hiding (filter, length, sum)
 
 part1 :: T.Text -> Int
-part1 input = solve (parseInstructions input) False
+part1 input = V.sum $ foldl (processInstruction False) emptyGrid $ parseInstructions input
 
 part2 :: T.Text -> Int
-part2 input = solve (parseInstructions input) True
+part2 input = V.sum $ foldl (processInstruction True) emptyGrid $ parseInstructions input
 
-data Coord = Coord Int Int deriving (Show, Eq, Ord)
+data Instruction = TurnOn Block | TurnOff Block | Toggle Block deriving (Show, Eq)
 
-data Block = Block Coord Coord deriving (Show, Eq, Ord)
-
-data Instruction = TurnOn Block | TurnOff Block | Toggle Block deriving (Show, Eq, Ord)
+emptyGrid :: UnboxedGrid Int
+emptyGrid = V.generate (1000 * 1000) $ const 0
 
 parseInstructions :: T.Text -> [Instruction]
 parseInstructions input = parseAoCInput input instructionsParser "instructionsParser"
   where
     numParser = read <$> P.many1 P.digit
     coordParser = Coord <$> (numParser <* P.char ',') <*> numParser
-    blockParser = Block <$> (coordParser <* P.string " through ") <*> coordParser
+    blockParser = (,) <$> (coordParser <* P.string " through ") <*> coordParser
     turnOnParser = TurnOn <$> (P.string "turn on " *> blockParser)
     turnOffParser = TurnOff <$> (P.string "turn off " *> blockParser)
     toggleParser = Toggle <$> (P.string "toggle " *> blockParser)
     instructionParser = P.choice $ P.try <$> [turnOnParser, turnOffParser, toggleParser]
     instructionsParser = P.many1 $ instructionParser <* P.optional P.newline
 
-solve :: [Instruction] -> Bool -> Int
-solve instructions brightness =
-  if brightness
-    then sum finalGrid
-    else length $ filter (>= 1) finalGrid
+processInstruction :: Bool -> UnboxedGrid Int -> Instruction -> UnboxedGrid Int
+processInstruction b grid i =
+  case (i, b) of
+    (TurnOn block, False) -> grid V.// newVals block (const 1)
+    (TurnOff block, False) -> grid V.// newVals block (const 0)
+    (Toggle block, False) -> grid V.// newVals block (\v -> if v == 0 then 1 else 0)
+    (TurnOn block, True) -> grid V.// newVals block (+ 1)
+    (TurnOff block, True) -> grid V.// newVals block (\v -> if v == 0 then 0 else v - 1)
+    (Toggle block, True) -> grid V.// newVals block (+ 2)
   where
-    finalGrid = applyInstructions brightness emptyGrid instructions
-    emptyGrid = generate (1000 * 1000) $ const 0
-
-applyInstructions :: Bool -> Vector Int -> [Instruction] -> Vector Int
-applyInstructions _ grid [] = grid
-applyInstructions brightness grid (instruction : instructions) =
-  applyInstructions brightness (updateGrid (getBounds instruction) fn) instructions
-  where
-    fn val = case instruction of
-      TurnOn _ -> if brightness then val + 1 else 1
-      TurnOff _ -> if brightness then max 0 (val - 1) else 0
-      Toggle _ -> if brightness then val + 2 else toggle val
-
-    getBounds (TurnOn blk) = blk
-    getBounds (TurnOff blk) = blk
-    getBounds (Toggle blk) = blk
-
-    toggle 1 = 0
-    toggle 0 = 1
-    toggle val = val
-
-    updateGrid (Block (Coord blx bly) (Coord trx try)) f =
-      grid // [(x * 1000 + y, f $ grid ! (x * 1000 + y)) | x <- [blx .. trx], y <- [bly .. try]]
+    idxAndVal x y fn = (x * 1000 + y, fn $ grid V.! (x * 1000 + y))
+    newVals (Coord x1 y1, Coord x2 y2) fn = [idxAndVal x y fn | x <- [x1 .. x2], y <- [y1 .. y2]]
