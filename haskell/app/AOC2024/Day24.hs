@@ -5,15 +5,16 @@ module AOC2024.Day24
 where
 
 import Data.Bits (xor, (.&.), (.|.))
+import Data.HashMap.Strict qualified as M
 import Data.List (isPrefixOf)
-import Data.Map qualified as M
 import Data.Text qualified as T
 import Text.Parsec qualified as P
 import Util.ParseHelpers (parseAoCInput)
 
 part1 :: T.Text -> Int
-part1 input = zGatesToDec $ processGates memo gates
+part1 input = M.foldrWithKey zGatetoDec 0 $ processGates memo gates
   where
+    zGatetoDec k v acc = if "z" `isPrefixOf` k && v then acc + (2 ^ (read (drop 1 k) :: Int)) else acc
     (memo, gates) = parseWiresAndGates input
 
 part2 :: T.Text -> Int
@@ -21,7 +22,7 @@ part2 _input = 0
 
 type Label = String
 
-type Memo = M.Map Label Bool
+type Memo = M.HashMap Label Bool
 
 newtype Input = Input Label deriving (Show)
 
@@ -35,15 +36,6 @@ data Gate
 
 type Gates = [Gate]
 
-zGatesToDec :: Memo -> Int
-zGatesToDec = M.foldlWithKey accFn 0
-  where
-    accFn :: Int -> Label -> Bool -> Int
-    accFn acc k v =
-      if ("z" `isPrefixOf` k) && v
-        then acc + (2 ^ (read (drop 1 k) :: Int))
-        else acc
-
 processGates :: Memo -> Gates -> Memo
 processGates memo [] = memo
 processGates memo (g : gs) =
@@ -55,11 +47,9 @@ processGates memo (g : gs) =
       AND (Input w1) (Input w2) _ -> (w1, w2)
       OR (Input w1) (Input w2) _ -> (w1, w2)
       XOR (Input w1) (Input w2) _ -> (w1, w2)
-
-processGate :: Memo -> Gate -> Memo
-processGate memo (AND (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 .&. memo M.! w2) memo
-processGate memo (OR (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 .|. memo M.! w2) memo
-processGate memo (XOR (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 `xor` memo M.! w2) memo
+    processGate memo (AND (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 .&. memo M.! w2) memo
+    processGate memo (OR (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 .|. memo M.! w2) memo
+    processGate memo (XOR (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 `xor` memo M.! w2) memo
 
 parseWiresAndGates :: T.Text -> (Memo, Gates)
 parseWiresAndGates input = parseAoCInput input wiresAndGatesParser "wiresAndGatesParser"

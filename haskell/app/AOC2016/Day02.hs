@@ -38,28 +38,12 @@ processInstruction isPart2 = foldl moveOnKeypad
     move coord _ = coord
 
 fancyKeypad :: M.Map Coord Char
-fancyKeypad =
-  M.fromList
-    [ (Coord 0 2, '1'),
-      (Coord 1 1, '2'),
-      (Coord 1 2, '3'),
-      (Coord 1 3, '4'),
-      (Coord 2 0, '5'),
-      (Coord 2 1, '6'),
-      (Coord 2 2, '7'),
-      (Coord 2 3, '8'),
-      (Coord 2 4, '9'),
-      (Coord 3 1, 'A'),
-      (Coord 3 2, 'B'),
-      (Coord 3 3, 'C'),
-      (Coord 4 2, 'D')
-    ]
+fancyKeypad = M.fromList $ row0 ++ row1 ++ row2 ++ row3
+  where
+    row0 = [(Coord 0 2, '1')]
+    row1 = [(Coord 1 y, intToDigit (y + 1)) | y <- [1 .. 3]]
+    row2 = [(Coord 2 y, intToDigit (y + 5)) | y <- [0 .. 4]]
+    row3 = [(Coord 3 1, 'A'), (Coord 3 2, 'B'), (Coord 3 3, 'C'), (Coord 4 2, 'D')]
 
 keypad :: M.Map Coord Char
-keypad =
-  M.fromList $
-    [ (Coord x y, c)
-      | x <- [0 .. 2],
-        y <- [0 .. 2],
-        let c = intToDigit $ x * 3 + y + 1
-    ]
+keypad = M.fromList $ [(Coord x y, c) | x <- [0 .. 2], y <- [0 .. 2], let c = intToDigit $ x * 3 + y + 1]

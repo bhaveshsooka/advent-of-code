@@ -11,6 +11,8 @@ module Util.GridUtils.Coord
   )
 where
 
+import Data.Hashable (Hashable (hashWithSalt))
+
 data Coord = Coord Int Int deriving (Show)
 
 type Block = (Coord, Coord)
@@ -30,6 +32,10 @@ instance Monoid Coord where
 instance Ord Coord where
   compare :: Coord -> Coord -> Ordering
   compare (Coord x1 y1) (Coord x2 y2) = compare (x1, y1) (x2, y2)
+
+instance Hashable Coord where
+  hashWithSalt :: Int -> Coord -> Int
+  hashWithSalt salt (Coord x y) = hashWithSalt salt (x, y)
 
 manhattanDistance :: Coord -> Coord -> Int
 manhattanDistance (Coord x1 y1) (Coord x2 y2) = abs (x1 - x2) + abs (y1 - y2)

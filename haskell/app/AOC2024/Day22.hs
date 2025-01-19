@@ -11,10 +11,9 @@ import Text.Parsec qualified as P
 import Util.ParseHelpers (parseAoCInput)
 
 part1 :: T.Text -> Int
-part1 input = sum secretNumbers2000
+part1 input = foldr ((+) . get2000thSecret) 0 $ parseSecretNumbers input
   where
-    secretNumbers2000 = V.last . generateNSecrets V.empty 2000 <$> secretNumbers
-    secretNumbers = parseSecretNumbers input
+    get2000thSecret s = foldr (const nextSecret) s ([1 .. 2000] :: [Int])
 
 part2 :: T.Text -> Int
 part2 _input = 0
@@ -23,24 +22,15 @@ data Op = Mix | Prune deriving (Show, Eq, Ord)
 
 type SecretNumbers = V.Vector Int
 
-generateNSecrets :: SecretNumbers -> Int -> Int -> SecretNumbers
-generateNSecrets acc 0 _ = acc
-generateNSecrets acc n secretNumber = generateNSecrets (acc V.++ V.singleton newSecret) (n - 1) newSecret
-  where
-    newSecret = generateNewSecretNumber secretNumber
-
-generateNewSecretNumber :: Int -> Int
-generateNewSecretNumber secretNumber = mixOrPrune Prune 0 val3
+nextSecret :: Int -> Int
+nextSecret secretNumber = mixOrPrune Prune 0 val3
   where
     val = mixOrPrune Mix (secretNumber * 64) secretNumber
     step1Result = mixOrPrune Prune 0 val
     val2 = mixOrPrune Mix (step1Result `div` 32) step1Result
     step2Result = mixOrPrune Prune 0 val2
     val3 = mixOrPrune Mix (step2Result * 2048) step2Result
-
-mixOrPrune :: Op -> Int -> Int -> Int
-mixOrPrune Mix val secretNumber = val `xor` secretNumber
-mixOrPrune Prune _ secretNumber = secretNumber `mod` 16777216
+    mixOrPrune op v sn = case op of Mix -> v `xor` sn; Prune -> sn `mod` 16777216
 
 parseSecretNumbers :: T.Text -> SecretNumbers
 parseSecretNumbers input = parseAoCInput input secretNumbersParser "secretNumbersParser"

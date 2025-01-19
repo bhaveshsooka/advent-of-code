@@ -114,7 +114,10 @@ executable advent-of-code-haskell
     AOC2024.Module
     Model
     Util.AOCHelpers
-    Util.GridHelpers
+    Util.GridUtils.Coord
+    Util.GridUtils.DirectionMoore
+    Util.GridUtils.DirectionVonNeumann
+    Util.GridUtils.Grid
     Util.ParseHelpers
 
   -- LANGUAGE extensions used by modules in this package.
@@ -127,6 +130,7 @@ executable advent-of-code-haskell
     , bytestring
     , containers
     , cryptohash-md5
+    , hashable
     , parsec
     , text
     , unordered-containers

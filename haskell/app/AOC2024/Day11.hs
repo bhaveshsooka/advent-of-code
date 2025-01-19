@@ -4,21 +4,25 @@ module AOC2024.Day11
   )
 where
 
-import Data.Map qualified as M
+import Data.HashMap.Strict qualified as M
 import Data.Text qualified as T
 
 part1 :: T.Text -> Int
-part1 input = length $ blinkMF 25 stones
+part1 input = length $ foldr (\_ -> concatMap applyRules) stones blinks
   where
-    stones = parseStones input
+    blinks :: [Int] = [1 .. 25]
+    stones = read . T.unpack <$> T.splitOn (T.pack " ") input
 
 part2 :: T.Text -> Int
-part2 input = foldl foldFn 0 memo
+part2 input = foldr foldFn 0 memo
   where
-    foldFn acc (Memo steps _ _) = if (steps !! (blinks - 1)) /= (-1) then acc + (steps !! (blinks - 1)) else acc
-    blinks = 75
-    memo = blinkMFMemo stones (createMemoTable blinks M.empty stones) (blinks, 0)
-    stones = parseStones input
+    foldFn (Memo steps _ _) acc = if (steps !! (numBlinks - 1)) /= (-1) then acc + (steps !! (numBlinks - 1)) else acc
+    (_, memo) = foldl blinkMFMemoFold (stones, createMemoTable (length blinks) M.empty stones) blinks
+    blinks :: [(Int, Int)] = zip (replicate numBlinks numBlinks) [0 .. numBlinks - 1]
+    numBlinks = 75
+    createMemoTable n = foldr (\x acc -> addToMemo n x 0 acc)
+    addToMemo blinks' stone offset = M.insert stone (Memo (replicate blinks' (-1)) offset [])
+    stones = read . T.unpack <$> T.splitOn (T.pack " ") input
 
 type Steps = [Int]
 
@@ -28,62 +32,37 @@ type Children = [Int]
 
 data Memo = Memo Steps Offset Children deriving (Show)
 
-createMemoTable :: Int -> M.Map Int Memo -> [Int] -> M.Map Int Memo
-createMemoTable n = foldl (\acc x -> addToMemo n x 0 acc)
-
-addToMemo :: Int -> Int -> Int -> M.Map Int Memo -> M.Map Int Memo
-addToMemo blinks stone offset = M.insert stone (Memo (replicate blinks (-1)) offset [])
-
-blinkMFMemo :: [Int] -> M.Map Int Memo -> (Int, Int) -> M.Map Int Memo
-blinkMFMemo stones memo (blinks, t) =
-  if t == blinks
-    then memo
-    else blinkMFMemo (addToStones stones newStones) newMemo (blinks, t + 1)
+blinkMFMemoFold :: ([Int], M.HashMap Int Memo) -> (Int, Offset) -> ([Int], M.HashMap Int Memo)
+blinkMFMemoFold (stones, memoCache) (blinks, t)
+  | t == blinks = (stones, memoCache)
+  | otherwise = (foldr addToStonesFold stones updatedStones, updatedMemo)
   where
-    (newMemo, newStones) = getNewStones (reverse stones) (blinks, t) (memo, [])
-
-addToStones :: [Int] -> [Int] -> [Int]
-addToStones stones [] = stones
-addToStones stones (x : xs) =
-  if x `elem` stones
-    then addToStones stones xs
-    else addToStones (stones ++ [x]) xs
-
-getNewStones :: [Int] -> (Int, Int) -> (M.Map Int Memo, [Int]) -> (M.Map Int Memo, [Int])
-getNewStones [] _ (memo, newStones) = (memo, newStones)
-getNewStones (stone : rest) (blinks, t) (memo, newStones) =
-  case M.lookup stone memo of
-    Just (Memo steps offset stonesChildren) ->
+    addToStonesFold x acc = if x `elem` acc then acc else acc ++ [x]
+    (updatedMemo, updatedStones) = foldr newStonesFold (memoCache, []) stones
+    newStonesFold stone (memo, newStones) =
+      maybe
+        (memo, newStones)
+        (newStonesMaybeFn stone newStones memo)
+        (M.lookup stone memo)
+    newStonesMaybeFn stone newStones memo (Memo steps offset stonesChildren) =
       case stonesChildren of
-        [] -> getNewStones rest (blinks, t) (newNewMemo, newNewStones)
+        [] -> (newNewMemo, newNewStones)
           where
+            newNewMemo = foldr addChildToMemo memoWithChildren childrenNotInMemo
+            memoWithChildren = M.insert stone (Memo newSteps offset children) memo
+            childrenNotInMemo = foldr childrenNotInMemoFold [] children
+            childrenNotInMemoFold child acc = if M.member child memo then acc else child : acc
+            addChildToMemo child = M.insert child (Memo (replicate blinks (-1)) (t + 1) [])
             newNewStones = newStones ++ children
-            children = applyRules stone
             newSteps = length children : drop 1 steps
-            childrenNotInMemo = fst <$> filter snd ((\e -> (e, M.notMember e memo)) <$> children)
-            newMemo = M.insert stone (Memo newSteps offset children) memo
-            newNewMemo = foldl (\acc x -> addChildToMemo acc (blinks, t) x) newMemo childrenNotInMemo
-        _ -> getNewStones rest (blinks, t) (newMemo, newStones)
+            children = applyRules stone
+        _ -> (memoWithChildren, newStones)
           where
-            newMemo = M.insert stone (Memo stoneNewStepsVal offset stonesChildren) memo
-            stoneNewStepsVal =
-              take (t - offset) steps
-                ++ [sumOfChildren (t - offset - 1) memo 0 stonesChildren]
-                ++ drop (t - offset + 1) steps
-    Nothing -> getNewStones rest (blinks, t) (memo, newStones)
-
-addChildToMemo :: M.Map Int Memo -> (Int, Int) -> Int -> M.Map Int Memo
-addChildToMemo memo (blinks, t) child = M.insert child (Memo (replicate blinks (-1)) (t + 1) []) memo
-
-sumOfChildren :: Int -> M.Map Int Memo -> Int -> [Int] -> Int
-sumOfChildren _ _ childSum [] = childSum
-sumOfChildren idx memo childSum (child : rest) = case M.lookup child memo of
-  Just (Memo s _ _) -> sumOfChildren idx memo (childSum + (s !! idx)) rest
-  Nothing -> sumOfChildren idx memo childSum rest
-
-blinkMF :: Int -> [Int] -> [Int]
-blinkMF 0 stones = stones
-blinkMF n stones = blinkMF (n - 1) $ concatMap applyRules stones
+            memoWithChildren = M.insert stone (Memo stoneNewStepsVal offset stonesChildren) memo
+            stoneNewStepsVal = take (t - offset) steps ++ [sumOfChildren] ++ drop (t - offset + 1) steps
+            sumOfChildren = foldr sumOfChildrenFold 0 stonesChildren
+            sumOfChildrenFold child childSum = childSum + maybe 0 maybeChildInMemo (M.lookup child memo)
+            maybeChildInMemo (Memo s _ _) = s !! (t - offset - 1)
 
 applyRules :: Int -> [Int]
 applyRules stone
@@ -95,6 +74,3 @@ applyRules stone
     secondHalf = drop (n `div` 2) strStone
     n = length strStone
     strStone = show stone
-
-parseStones :: T.Text -> [Int]
-parseStones input = read . T.unpack <$> T.splitOn (T.pack " ") input

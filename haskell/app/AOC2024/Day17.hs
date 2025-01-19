@@ -10,16 +10,16 @@ where
 -}
 
 import Data.Bits (Bits (xor))
-import Data.List ((!?))
+import Data.List (singleton, (!?))
 import Data.Text qualified as T
 import Text.Parsec qualified as P
 import Util.ParseHelpers (parseAoCInput)
 
 part1 :: T.Text -> String
-part1 input = formatProgOutput "" programOutput
+part1 input = fmtProgOutput (\x -> take (length x - 1) x) foldFn "," "" $ processProgram registers [] 0 program
   where
-    programOutput = processProgram registers [] 0 program
     (registers, program) = parseRegistersAndProgram input
+    foldFn o = case o of (Output output) -> show output; _ -> ""
 
 part2 :: T.Text -> Int
 part2 input = _BruteForceFindARegister registers program initialA
@@ -41,62 +41,36 @@ data ProgOutput
   = NewRegisters Registers
   | Output Int
   | Jump Int
-  | Nothing'
+  | NoOutput
   deriving (Show)
 
 _BruteForceFindARegister :: Registers -> [Int] -> Int -> Int
 _BruteForceFindARegister registers@(Registers (Register a) (Register b) (Register c)) program initialA
   | length programOutput /= length program =
       _BruteForceFindARegister (Registers (Register $ a + 1) (Register b) (Register c)) program initialA
-  | program == progOutputToList [] programOutput && a /= initialA = a
+  | program == fmtProgOutput id foldFn [] [] programOutput && a /= initialA = a
   | otherwise = _BruteForceFindARegister (Registers (Register $ a + 1) (Register b) (Register c)) program initialA
   where
     programOutput = processProgram registers [] 0 program
+    foldFn o = case o of (Output output) -> singleton output; _ -> []
 
-progOutputToList :: [Int] -> [ProgOutput] -> [Int]
-progOutputToList acc [] = acc
-progOutputToList acc (x : xs) = case x of
-  Output output -> progOutputToList (acc <> [output]) xs
-  _ -> progOutputToList acc xs
-
-formatProgOutput :: String -> [ProgOutput] -> String
-formatProgOutput acc [] = take (length acc - 1) acc
-formatProgOutput acc (x : xs) = case x of
-  Output output -> formatProgOutput (acc <> show output <> ",") xs
-  _ -> formatProgOutput acc xs
+fmtProgOutput :: (Semigroup (f a)) => (f a -> f a) -> (b -> f a) -> f a -> f a -> [b] -> f a
+fmtProgOutput c f d s p = c $ foldl (\acc x -> acc <> f x <> d) s p
 
 processProgram :: Registers -> [ProgOutput] -> Int -> [Int] -> [ProgOutput]
 processProgram registers progOutput ptr program =
-  case (opCodeR, operandR) of
+  case (program !? ptr, program !? (ptr + 1)) of
     (Just opCode, Just operand) -> case processOpCode registers opCode operand of
-      Nothing' -> processProgram registers progOutput (ptr + 2) program
+      NoOutput -> processProgram registers progOutput (ptr + 2) program
       Output output -> processProgram registers (progOutput ++ [Output output]) (ptr + 2) program
       NewRegisters newRegisters -> processProgram newRegisters progOutput (ptr + 2) program
       Jump newPtr -> processProgram registers progOutput newPtr program
     _ -> progOutput
-  where
-    opCodeR = program !? ptr
-    operandR = program !? (ptr + 1)
-
-parseRegistersAndProgram :: T.Text -> (Registers, [Int])
-parseRegistersAndProgram input = parseAoCInput input registersAndProgramParser "registersAndProgramParser"
-  where
-    numParser = read <$> P.many1 P.digit
-    numParserWithVoider voidStr = P.string voidStr *> numParser
-    registerParser lab = Register <$> numParserWithVoider ("Register " <> lab <> ": ")
-    registersParser =
-      Registers
-        <$> (registerParser "A" <* P.newline)
-        <*> (registerParser "B" <* P.newline)
-        <*> (registerParser "C" <* P.newline)
-    programParser = P.string "Program: " *> P.sepBy numParser (P.char ',')
-    registersAndProgramParser = (,) <$> registersParser <* P.newline <*> programParser
 
 getOperandValue :: Registers -> Operand -> OperandType -> Int
 getOperandValue _ operand Literal = operand
 getOperandValue (Registers (Register a) (Register b) (Register c)) operand Combo
-  | operand < 1 = error "Invalid operand"
-  | operand < 4 = operand
+  | operand > 0 && operand < 4 = operand
   | operand == 4 = a
   | operand == 5 = b
   | operand == 6 = c
@@ -118,7 +92,7 @@ processOpCode registers@(Registers (Register a) (Register b) (Register c)) opCod
     NewRegisters $ Registers (Register a) (Register result) (Register c)
   3 ->
     if a == 0
-      then Nothing'
+      then NoOutput
       else Jump $ getOperandValue registers operand Literal
   4 -> do
     let result = b `xor` c
@@ -135,3 +109,17 @@ processOpCode registers@(Registers (Register a) (Register b) (Register c)) opCod
     let result = numerator `div` denominator
     NewRegisters $ Registers (Register a) (Register b) (Register result)
   _ -> error "Invalid opCode"
+
+parseRegistersAndProgram :: T.Text -> (Registers, [Int])
+parseRegistersAndProgram input = parseAoCInput input registersAndProgramParser "registersAndProgramParser"
+  where
+    numParser = read <$> P.many1 P.digit
+    numParserWithVoider voidStr = P.string voidStr *> numParser
+    registerParser lab = Register <$> numParserWithVoider ("Register " <> lab <> ": ")
+    registersParser =
+      Registers
+        <$> (registerParser "A" <* P.newline)
+        <*> (registerParser "B" <* P.newline)
+        <*> (registerParser "C" <* P.newline)
+    programParser = P.string "Program: " *> P.sepBy numParser (P.char ',')
+    registersAndProgramParser = (,) <$> registersParser <* P.newline <*> programParser

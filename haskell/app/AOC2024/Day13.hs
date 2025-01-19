@@ -11,63 +11,51 @@ import Util.ParseHelpers (parseAoCInput)
 part1 :: T.Text -> Int
 part1 input = sum $ tokensSpent <$> intSolutions
   where
-    tokensSpent x = foldl (\acc (a, b) -> acc + (a * b)) 0 (zip [3, 1] x)
+    tokensSpent x = foldr (\(a, b) acc -> acc + (a * b)) 0 (zip [3, 1] x)
     intSolutions = (\x -> round . fst <$> x) <$> filteredDiffs
     eps = 1.0e-3 -- 0.001 a small enough number to detect rounding errors (hopefully)
     filteredDiffs = filter filterFn diffsForRows
     filterFn = all (\(_, diff) -> diff < eps)
     diffsForRows = diffsForRow <$> optimalMoves
     diffsForRow (x :: [Double]) = (\e -> (e, abs (fromIntegral (round e :: Int) - e))) <$> x
-    optimalMoves = solve . clawMachineToMatrix <$> parseClawMachines input
+    optimalMoves = solve . clawMachineToMatrix factor <$> parseClawMachines input
+    factor = 0
 
 part2 :: T.Text -> Int
 part2 input = sum $ tokensSpent <$> intSolutions
   where
-    tokensSpent x = foldl (\acc (a, b) -> acc + (a * b)) 0 (zip [3, 1] x)
+    tokensSpent x = foldr (\(a, b) acc -> acc + (a * b)) 0 (zip [3, 1] x)
     intSolutions = (\x -> round . fst <$> x) <$> filteredDiffs
     eps = 1.0e-3 -- 0.001 a small enough number to detect rounding errors (hopefully)
     filteredDiffs = filter filterFn diffsForRows
     filterFn = all (\(_, diff) -> diff < eps)
     diffsForRows = diffsForRow <$> optimalMoves
     diffsForRow (x :: [Double]) = (\e -> (e, abs (fromIntegral (round e :: Int) - e))) <$> x
-    optimalMoves = solve . biggerClawMachineToMatrix <$> parseClawMachines input
+    optimalMoves = solve . clawMachineToMatrix factor <$> parseClawMachines input
+    factor = 10000000000000
 
 type Row = [Double]
 
 type Matrix = [Row]
 
-data Button = Button Int Int deriving (Show)
+type Button = (Int, Int)
 
-data Prize = Prize Int Int deriving (Show)
+type Prize = (Int, Int)
 
 data ClawMachine = ClawMachine Button Button Prize deriving (Show)
 
-biggerClawMachineToMatrix :: ClawMachine -> Matrix
-biggerClawMachineToMatrix (ClawMachine (Button x1 y1) (Button x2 y2) (Prize x3 y3)) =
-  [ [fromIntegral x1, fromIntegral x2, fromIntegral (10000000000000 + x3)],
-    [fromIntegral y1, fromIntegral y2, fromIntegral (10000000000000 + y3)]
-  ]
-
-clawMachineToMatrix :: ClawMachine -> Matrix
-clawMachineToMatrix (ClawMachine (Button x1 y1) (Button x2 y2) (Prize x3 y3)) =
-  [ [fromIntegral x1, fromIntegral x2, fromIntegral x3],
-    [fromIntegral y1, fromIntegral y2, fromIntegral y3]
+clawMachineToMatrix :: Int -> ClawMachine -> Matrix
+clawMachineToMatrix factor (ClawMachine (x1, y1) (x2, y2) (x3, y3)) =
+  [ [fromIntegral x1, fromIntegral x2, fromIntegral (factor + x3)],
+    [fromIntegral y1, fromIntegral y2, fromIntegral (factor + y3)]
   ]
 
 parseClawMachines :: T.Text -> [ClawMachine]
 parseClawMachines input = parseAoCInput input clawMachinesParser "clawMachinesParser"
   where
-    numParserWithVoider voidStr = P.string voidStr *> (read <$> P.many1 P.digit)
-    buttonParser lab =
-      Button
-        <$> numParserWithVoider ("Button " <> lab <> ": X+")
-        <*> numParserWithVoider ", Y+"
-        <* P.newline
-    prizeParser =
-      Prize
-        <$> numParserWithVoider "Prize: X="
-        <*> numParserWithVoider ", Y="
-        <* P.optional P.newline
+    numParserVoidLStr voidStr = P.string voidStr *> (read <$> P.many1 P.digit)
+    buttonParser lab = (,) <$> numParserVoidLStr ("Button " <> lab <> ": X+") <*> numParserVoidLStr ", Y+" <* P.newline
+    prizeParser = (,) <$> numParserVoidLStr "Prize: X=" <*> numParserVoidLStr ", Y=" <* P.optional P.newline
     clawMachineParser = ClawMachine <$> buttonParser "A" <*> buttonParser "B" <*> prizeParser
     clawMachinesParser = P.many1 $ clawMachineParser <* P.optional P.newline
 
@@ -84,7 +72,7 @@ substitute matrix = foldr next [last (last matrix)] (init matrix)
         solution = last row - sum (zipWith (*) found subpart)
 
 gaussianReduce :: Matrix -> Matrix
-gaussianReduce matrix = fixlastrow $ foldl reduceRow matrix [0 .. length matrix - 1]
+gaussianReduce matrix = fixlastrow $ foldr reduceRow matrix [0 .. length matrix - 1]
   where
     -- swaps element at position a with element at position b.
     swap xs a b
@@ -101,7 +89,7 @@ gaussianReduce matrix = fixlastrow $ foldl reduceRow matrix [0 .. length matrix 
           _ -> error "list is too short"
 
     -- concat the lists and repeat
-    reduceRow matrix1 r = take r matrix2 ++ [row1] ++ nextrows
+    reduceRow r matrix1 = take r matrix2 ++ [row1] ++ nextrows
       where
         -- first non-zero element on or below (r,r).
         filteredMatrixRow = filter (\x -> matrix1 !! x !! r /= 0) [r .. length matrix1 - 1]

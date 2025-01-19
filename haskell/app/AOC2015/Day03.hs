@@ -14,9 +14,9 @@ part1 input = length . nub . scanl (<>) mempty $ getCoord <$> T.unpack input
 part2 :: T.Text -> Int
 part2 input = length . nub $ santa <> roboSanta
   where
-    xx = partition (even . fst) $ zip [0 :: Int ..] $ getCoord <$> T.unpack input
-    santa = scanl (<>) mempty $ snd <$> fst xx
-    roboSanta = scanl (<>) mempty $ snd <$> snd xx
+    (evenDirections, oddDirections) = partition (even . fst) $ zip [0 :: Int ..] $ getCoord <$> T.unpack input
+    santa = scanl (<>) mempty $ snd <$> evenDirections
+    roboSanta = scanl (<>) mempty $ snd <$> oddDirections
 
 getCoord :: Char -> Coord
 getCoord c = case c of

@@ -4,116 +4,52 @@ module AOC2024.Day10
   )
 where
 
-import Data.Bifunctor qualified as BF
 import Data.Char (digitToInt)
-import Data.Map qualified as M
+import Data.HashMap.Strict qualified as M
 import Data.Maybe (mapMaybe)
 import Data.Set qualified as S
 import Data.Text qualified as T
 import Data.Vector qualified as V
+import Util.GridUtils.Coord (Coord (Coord), neighbors4)
+import Util.GridUtils.DirectionVonNeumann (Direction (..))
+import Util.GridUtils.Grid (GridInfo, parseGrid)
 import Prelude hiding (Left, Right)
 
 part1 :: T.Text -> Int
-part1 input = length $ M.filter (not . null) paths
+part1 input = foldr (\ps acc -> if not $ null ps then acc + 1 else acc) 0 paths
   where
-    paths = getAllPathsForAllStarts M.empty gridInfo startEndPairs
-    startEndPairs = outerProduct starts ends
-    starts = V.toList $ V.map fst $ V.filter (\(_, e) -> e == '0') grid
-    ends = V.toList $ V.map fst $ V.filter (\(_, e) -> e == '9') grid
-    gridInfo@(grid, _, _) = parseGrid input
+    paths = foldr allPathsFold M.empty startEndPairs
+    allPathsFold (s, e) = M.insert (s, e) (dfs gridInfo s e)
+    startEndPairs = [(c1, c2) | (c1, ch1) <- gridList, (c2, ch2) <- gridList, ch1 == 0 && ch2 == 9]
+    gridList = V.toList grid
+    gridInfo@(grid, _, _) = parseGrid digitToInt input
 
 part2 :: T.Text -> Int
-part2 input = sum $ M.map length paths
+part2 input = foldr ((+) . length) 0 paths
   where
-    paths = getAllPathsForAllStarts M.empty gridInfo startEndPairs
-    startEndPairs = outerProduct starts ends
-    starts = V.toList $ V.map fst $ V.filter (\(_, e) -> e == '0') grid
-    ends = V.toList $ V.map fst $ V.filter (\(_, e) -> e == '9') grid
-    gridInfo@(grid, _, _) = parseGrid input
+    paths = foldr allPathsFold M.empty startEndPairs
+    allPathsFold (s, e) = M.insert (s, e) (dfs gridInfo s e)
+    startEndPairs = [(c1, c2) | (c1, ch1) <- gridList, (c2, ch2) <- gridList, ch1 == 0 && ch2 == 9]
+    gridList = V.toList grid
+    gridInfo@(grid, _, _) = parseGrid digitToInt input
 
-data Coord = Coord Int Int deriving (Show, Ord)
+type TopographyInfo = GridInfo Int
 
-instance Eq Coord where
-  (==) :: Coord -> Coord -> Bool
-  (Coord x y) == (Coord x' y') = x == x' && y == y'
+type Path = [(Coord, Direction)]
 
-type Grid = V.Vector (Coord, Char)
-
-type Path = V.Vector (Coord, Direction)
-
-data Direction = Up | Down | Left | Right deriving (Show, Eq)
-
-getAllPathsForAllStarts :: M.Map (Coord, Coord) [Path] -> (Grid, Int, Int) -> [(Coord, Coord)] -> M.Map (Coord, Coord) [Path]
-getAllPathsForAllStarts acc _ [] = acc
-getAllPathsForAllStarts acc gridInfo ((start, end) : rest) = getAllPathsForAllStarts newAcc gridInfo rest
+dfs :: TopographyInfo -> Coord -> Coord -> [Path]
+dfs (grid, rows, cols) start end = go S.empty [] start
   where
-    newAcc = M.insert (start, end) (dfs gridInfo start (== end)) acc
-
--- Function to perform DFS
-dfs :: (Grid, Int, Int) -> Coord -> (Coord -> Bool) -> [Path]
-dfs gridInfo start isGoal = go S.empty V.empty start
-  where
-    -- Recursive DFS function
-    go :: S.Set Coord -> Path -> Coord -> [Path]
-    go visited path current
-      | isGoal current = [path] -- If goal is reached, return the current path
-      | otherwise = concat paths
+    go visited path current@(Coord x y)
+      | current == end = [path]
+      | otherwise = concat $ mapMaybe buildPaths neighbors
       where
-        visited' = S.insert current visited
-        neighbors = getNeighbors gridInfo visited' current
-        paths =
-          mapMaybe
-            ( \(coord, dir) ->
-                if coord `S.member` visited'
-                  then Nothing
-                  else Just $ go visited' (path `V.snoc` (coord, dir)) coord
-            )
-            neighbors
-
-getNeighbors :: (Grid, Int, Int) -> S.Set Coord -> Coord -> [(Coord, Direction)]
-getNeighbors gridInfo visited (Coord x y) = filter isValid neighbors
-  where
-    (grid, rowLen, _) = gridInfo
-    neighbors =
-      [ (Coord (x - 1) y, Up),
-        (Coord (x + 1) y, Down),
-        (Coord x (y - 1), Left),
-        (Coord x (y + 1), Right)
-      ]
-    isValid (coord, _) =
-      case currentValue of
-        Nothing -> False
-        Just (_, cv) -> case nextValue of
-          Nothing -> False
-          Just (_, nv) ->
-            digitToInt nv - digitToInt cv == 1
-              && coordInGrid grid (Coord x y)
-              && coordInGrid grid coord
-              && coord `S.notMember` visited
-      where
-        currentValue = grid V.!? getPos (Coord x y)
-        nextValue = grid V.!? getPos coord
-        getPos (Coord x' y') = x' * rowLen + y'
-
--- Check if a coordinate is within the grid
-coordInGrid :: Grid -> Coord -> Bool
-coordInGrid grid coord = any (\(c, _) -> c == coord) grid
-
-outerProduct :: (Monad m) => m a -> m b -> m (a, b)
-outerProduct xs ys = do
-  x <- xs -- for each x drawn from xs:
-  y <- ys --   for each y drawn from ys:
-  return (x, y) --      produce the (x,y) pair
-
-parseGrid :: T.Text -> (Grid, Int, Int)
-parseGrid input = (grid, rowLen grid, colLen grid)
-  where
-    grid = go (T.lines input) V.empty 0
-    rowLen (g :: Grid) = V.maximum ((\(Coord x _) -> x) . fst <$> g) + 1
-    colLen (g :: Grid) = V.maximum ((\(Coord _ y) -> y) . fst <$> g) + 1
-
-    go :: [T.Text] -> Grid -> Int -> Grid
-    go [] acc _ = acc
-    go (x : xs) acc row = go xs (acc V.++ V.fromList columns) (row + 1)
-      where
-        columns = BF.first (Coord row) <$> zip [0 ..] (T.unpack x)
+        buildPaths (coord, dir)
+          | coord `S.member` visited = Nothing
+          | otherwise = Just $ go (S.insert current visited) ((coord, dir) : path) coord
+        neighbors = filter isValid $ zip (neighbors4 (Coord x y)) [N, W, E, S]
+        inBounds (Coord x' y') = x' >= 0 && x' < rows && y' >= 0 && y' < cols
+        isValid (coord@(Coord nx ny), _) =
+          inBounds coord
+            && snd (grid V.! (nx * rows + ny)) - snd (grid V.! (x * rows + y)) == 1
+            && coord `S.notMember` visited
