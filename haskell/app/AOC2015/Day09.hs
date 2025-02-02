@@ -62,7 +62,7 @@ findPaths graph visited (dist, route) (node, end)
       | otherwise = Just $ findPaths graph newVisited newPath (neighbour, end)
       where
         newVisited = S.insert node visited
-        newPath = (dist + neighborDistance, node : route)
+        newPath = (dist + neighborDistance, neighbour : route)
 
 parseRoutes :: T.Text -> Graph
 parseRoutes input = foldr addRouteFold M.empty routes
