@@ -1,16 +1,17 @@
 def adjLvlDiff(report):
-  return all([1 <= abs(report[i] - report[i + 1]) <= 3 for i in range(len(report) - 1)])
-
-
-def getDir(a, b):
-  return 'inc' if a < b else 'dec'
+  def withinRange(a, b):
+    return 1 <= abs(a - b) <= 3
+  return all([withinRange(report[i], report[i + 1]) for i in range(len(report) - 1)])
 
 
 def isMonotonic(report):
-  initDir = getDir(report[0], report[1])
+  def getDir(a, b):
+    return 'inc' if a < b else 'dec'
 
   def sameDir(a, b):
     return getDir(a, b) == initDir
+
+  initDir = getDir(report[0], report[1])
   return all([sameDir(report[i], report[i + 1]) for i in range(1, len(report) - 1)])
 
 
