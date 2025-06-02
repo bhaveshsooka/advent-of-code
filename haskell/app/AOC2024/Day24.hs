@@ -40,16 +40,16 @@ processGates :: Memo -> Gates -> Memo
 processGates memo [] = memo
 processGates memo (g : gs) =
   if M.member label1 memo && M.member label2 memo
-    then processGates (processGate memo g) gs
+    then processGates (processGate g) gs
     else processGates memo $ gs ++ [g]
   where
     (label1, label2) = case g of
       AND (Input w1) (Input w2) _ -> (w1, w2)
       OR (Input w1) (Input w2) _ -> (w1, w2)
       XOR (Input w1) (Input w2) _ -> (w1, w2)
-    processGate memo (AND (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 .&. memo M.! w2) memo
-    processGate memo (OR (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 .|. memo M.! w2) memo
-    processGate memo (XOR (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 `xor` memo M.! w2) memo
+    processGate (AND (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 .&. memo M.! w2) memo
+    processGate (OR (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 .|. memo M.! w2) memo
+    processGate (XOR (Input w1) (Input w2) (Output w3)) = M.insert w3 (memo M.! w1 `xor` memo M.! w2) memo
 
 parseWiresAndGates :: T.Text -> (Memo, Gates)
 parseWiresAndGates input = parseAoCInput input wiresAndGatesParser "wiresAndGatesParser"

@@ -20,7 +20,6 @@ part1 input = length . snd $ findVisited gridInfo N start V.empty
 part2 :: T.Text -> Int
 part2 input = foldr countLoopsFold 0 (V.tail originalPath)
   where
-    newReplacedGrids = V.filter (V.elem '^' . V.map snd) $ changeOneValue . fst <$> originalPath
     countLoopsFold (c, _) acc =
       if fst (findVisited (changeOneValue c, rows, cols) N start V.empty)
         then acc + 1
