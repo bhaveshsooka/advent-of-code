@@ -74,6 +74,7 @@ executable advent-of-code-haskell
     AOC2015.Day09
     AOC2015.Day10
     AOC2015.Day11
+    AOC2015.Day12
     AOC2015.Module
     AOC2016.Day01
     AOC2016.Day02
@@ -137,6 +138,8 @@ executable advent-of-code-haskell
     , text
     , unordered-containers
     , vector
+    , aeson
+    , scientific
 
   -- Directories containing source files.
   hs-source-dirs:   app
