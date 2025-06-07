@@ -7,34 +7,22 @@ where
 import Data.Aeson qualified as AE
 import Data.Scientific qualified as S
 import Data.Text qualified as T
-import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
 
 part1 :: T.Text -> Int
-part1 input = sum $ parseNumbers input
+part1 input = truncate . sum $ parseNumbers (parseJson input) False
 
 part2 :: T.Text -> Int
-part2 input = case AE.decodeStrictText @AE.Value input of
-  Just json -> case S.toBoundedInteger $ sum $ parseNonRedNumbers json of
-    Just total -> total
-    _ -> error "Failed to convert sum to Int"
+part2 input = truncate . sum $ parseNumbers (parseJson input) True
+
+parseNumbers :: AE.Value -> Bool -> [S.Scientific]
+parseNumbers (AE.Object obj) excludeRed
+  | excludeRed && AE.String (T.pack "red") `elem` obj = []
+  | otherwise = foldl (\acc v -> parseNumbers v excludeRed ++ acc) [] obj
+parseNumbers (AE.Array arr) excludeRed = foldl (\acc v -> parseNumbers v excludeRed ++ acc) [] arr
+parseNumbers (AE.Number n) _ = pure n
+parseNumbers _ _ = []
+
+parseJson :: T.Text -> AE.Value
+parseJson input = case AE.decodeStrictText @AE.Value input of
+  Just json -> json
   Nothing -> error "Failed to parse JSON input"
-
-parseNonRedNumbers :: AE.Value -> [S.Scientific]
-parseNonRedNumbers (AE.Object obj)
-  | AE.String (T.pack "red") `elem` obj = []
-  | otherwise = foldl (\acc v -> parseNonRedNumbers v ++ acc) [] obj
-parseNonRedNumbers (AE.Array arr) = foldl (\acc v -> parseNonRedNumbers v ++ acc) [] arr
-parseNonRedNumbers (AE.Number n) = pure n
-parseNonRedNumbers _ = []
-
-parseNumbers :: T.Text -> [Int]
-parseNumbers input = parseAoCInput input extractNumsParser "extractNumsParser"
-  where
-    numParser =
-      P.choice
-        [ read <$> P.many1 P.digit,
-          negate . read <$> (P.char '-' *> P.many1 P.digit)
-        ]
-    numsParser = P.choice [P.try numParser, P.try $ (0 :: Int) <$ P.anyChar]
-    extractNumsParser = P.many1 $ numsParser <* P.optional P.newline
