@@ -17,7 +17,7 @@ import Data.ByteString.Char8 qualified as Char8 (pack)
 import Data.ByteString.Lazy.Char8 qualified as LChar8 (unpack)
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as TE
-import Model (AOCDayPart (AOCDayPart, AOCDayPartTiming), AOCDayParts)
+import Model (AOCDayPart (AOCDayPart, AOCDayPartTiming), AOCPartsResult)
 import Network.HTTP.Client
   ( httpLbs,
     newManager,
@@ -45,15 +45,16 @@ printYear y = do
 printDay :: (Int, Int) -> IO ()
 printDay (year, day) = do
   result <- getAoCResult (year, day)
-  (p1, p2) <- case result of
-    Left err -> pure (err, err)
+  case result of
+    Left err -> do
+      printf err
+      printf "\n"
     Right (part1, part2) -> do
       inputData <- fetchData (year, day)
       p1 <- runPart part1 inputData
       p2 <- runPart part2 inputData
-      pure (p1, p2)
-  printf "Year %d, Day %02d -> Part 1: %s, Part 2: %s" year day p1 p2
-  printf "\n"
+      printf "Year %d, Day %02d -> Part 1: %s, Part 2: %s" year day p1 p2
+      printf "\n"
 
 runPart :: AOCDayPart -> T.Text -> IO String
 runPart (AOCDayPart part) input =
@@ -61,7 +62,7 @@ runPart (AOCDayPart part) input =
 runPart (AOCDayPartTiming part timing) input =
   pure $ show timing ++ ": " ++ show (part input)
 
-getAoCResult :: (Int, Int) -> IO (Either String AOCDayParts)
+getAoCResult :: (Int, Int) -> IO AOCPartsResult
 getAoCResult (year, day) =
   pure $ case year of
     2015 -> AOC2015.getParts day
