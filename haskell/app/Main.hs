@@ -9,8 +9,9 @@ import Configuration.Dotenv (loadFile, defaultConfig)
 main :: IO ()
 main = do
   loadFile defaultConfig
-  yearMax <- (\(x, _, _) -> fromInteger x) . toGregorian . utctDay <$> getCurrentTime
-  let yearPrompt = "Which year would you like to see?"
+  (currentYear, currentMonth) <- (\(x, y, _) -> (fromInteger x, y)) . toGregorian . utctDay <$> getCurrentTime
+  let yearMax = if currentMonth < 12 then currentYear - 1 else currentYear
+      yearPrompt = "Which year would you like to see?"
       yearErr = "Invalid year. Please enter a valid year between 2015 and " ++ show yearMax ++ "."
   putStrLn "Welcome to Advent of Code!"
   maybeYear <- whatToPrint yearPrompt yearErr 2015 yearMax
