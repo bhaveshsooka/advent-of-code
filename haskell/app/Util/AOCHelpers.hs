@@ -1,5 +1,7 @@
 module Util.AOCHelpers
   ( printAoCDay,
+    printYear,
+    printYears,
   )
 where
 
@@ -9,41 +11,58 @@ import AOC2018.Module qualified as AOC2018
 import AOC2022.Module qualified as AOC2022
 import AOC2023.Module qualified as AOC2023
 import AOC2024.Module qualified as AOC2024
-import Data.Text.IO qualified as TIO
-import Model (AoCAnswer, AoCDay, Part (Part), Parts, Timing (NoValue, Value), errMsgParts)
-import System.IO.Error (tryIOError)
+import Control.Monad (unless)
+import Data.ByteString qualified as B
+import Data.ByteString.Char8 qualified as Char8 (pack)
+import Data.ByteString.Lazy.Char8 qualified as LChar8 (unpack)
+import Data.Text qualified as T
+import Data.Text.Encoding qualified as TE
+import Model (AOCDayPart (AOCDayPart, AOCDayPartTiming), AOCDayParts)
+import Network.HTTP.Client
+  ( httpLbs,
+    newManager,
+    parseRequest,
+    requestHeaders,
+    responseBody,
+    responseStatus,
+  )
+import Network.HTTP.Client.TLS (tlsManagerSettings)
+import Network.HTTP.Types.Header (hCookie)
+import Network.HTTP.Types.Status (statusCode)
+import System.Directory (createDirectory, doesDirectoryExist, doesFileExist)
+import System.Environment (getEnv)
 import Text.Printf (printf)
 
-printAoCDay :: AoCDay -> IO ()
+printYears :: Int -> IO ()
+printYears currentYear = mapM_ printYear [2015 .. currentYear]
+
+printYear :: Int -> IO ()
+printYear y = do
+  putStrLn $ "---------Advent of Code " <> show y <> "---------"
+  mapM_ printAoCDay ([(y, day) | day <- [1 .. 25]])
+  putStrLn ""
+
+printAoCDay :: (Int, Int) -> IO ()
 printAoCDay (year, day) = do
-  (p1, p2) <-
-    if not validated
-      then pure (errMsgInvalidYear, errMsgInvalidYear)
-      else runPart (year, day) filename
-  printf $ "------ Day " <> d <> " ------"
-  printf $ "\npart1: " <> p1
-  printf $ "\npart2: " <> p2
-  printf "\n\n"
-  where
-    d = padLeft (show day) '0' 2
-    filename = "./data/" <> show year <> "/" <> d <> ".txt"
-    padLeft s c n = replicate (n - length s) c <> s
-    validated = year >= 2015 && day >= 1 && day <= 25
-    errMsgInvalidYear = "Invalid AoC Day " <> show year <> "-" <> d
+  result <- getAoCResult (year, day)
+  (p1, p2) <- case result of
+    Left err -> pure (err, err)
+    Right (part1, part2) -> do
+      inputData <- fetchData (year, day)
+      p1 <- runPart part1 inputData
+      p2 <- runPart part2 inputData
+      pure (p1, p2)
+  printf "Year %d, Day %02d -> Part 1: %s, Part 2: %s" year day p1 p2
+  printf "\n"
 
-runPart :: AoCDay -> String -> IO (String, String)
-runPart (year, day) filename = do
-  (Part part1, Part part2) <- getAoCDayParts (year, day)
-  inputTextResult <- tryIOError $ TIO.readFile filename
-  pure $ case inputTextResult of
-    Left _ -> (errMsgNoData, errMsgNoData)
-    Right a -> (runPart' part1 a, runPart' part2 a)
-  where
-    runPart' p t = formatAoCAnswer (show $ p t, NoValue)
-    errMsgNoData = "Input data file not found: " <> filename
+runPart :: AOCDayPart -> T.Text -> IO String
+runPart (AOCDayPart part) input =
+  pure $ show $ part input
+runPart (AOCDayPartTiming part timing) input =
+  pure $ show timing ++ ": " ++ show (part input)
 
-getAoCDayParts :: AoCDay -> IO Parts
-getAoCDayParts (year, day) =
+getAoCResult :: (Int, Int) -> IO (Either String AOCDayParts)
+getAoCResult (year, day) =
   pure $ case year of
     2015 -> AOC2015.getParts day
     2016 -> AOC2016.getParts day
@@ -51,12 +70,37 @@ getAoCDayParts (year, day) =
     2022 -> AOC2022.getParts day
     2023 -> AOC2023.getParts day
     2024 -> AOC2024.getParts day
-    _ -> errMsgParts errMsgValidYear
-  where
-    errMsgValidYear = "Year " <> show year <> " has not been attempted yet"
+    _ -> Left $ "Year " <> show year <> " has not been attempted yet"
 
-formatAoCAnswer :: AoCAnswer -> String
-formatAoCAnswer (p, t) =
-  case t of
-    Value a -> p <> " (" <> printf "%.9f" a <> " sec)"
-    NoValue -> p
+fetchData :: (Int, Int) -> IO T.Text
+fetchData (year, day) = do
+  let dataDir = "data/"
+      yearDir = dataDir <> show year <> "/"
+      paddedDay = if day < 10 then "0" <> show day else show day
+      local_file = paddedDay <> ".txt"
+  _ <- do
+    exists <- doesDirectoryExist dataDir
+    unless exists $ createDirectory dataDir
+  _ <- do
+    exists <- doesDirectoryExist yearDir
+    unless exists $ createDirectory yearDir
+  _ <- do
+    exists <- doesFileExist (yearDir <> local_file)
+    unless exists $ downloadFile (year, day) (yearDir <> local_file)
+  byteStrData <- B.readFile (yearDir <> local_file)
+  pure $ TE.decodeUtf8 byteStrData
+
+downloadFile :: (Int, Int) -> String -> IO ()
+downloadFile (year, day) filename = do
+  let url = "https://adventofcode.com/" <> show year <> "/day/" <> show day <> "/input"
+  cookie <- getEnv "COOKIE"
+  req <- parseRequest url
+  let req0 = req {requestHeaders = [(hCookie, Char8.pack cookie)]}
+  manager <- newManager tlsManagerSettings
+  resp <- httpLbs req0 manager
+  let body :: String = LChar8.unpack $ responseBody resp
+  case statusCode (responseStatus resp) of
+    200 -> do
+      writeFile filename body
+    _ -> do
+      error $ "Failed to download input for year " ++ show year ++ " day " ++ show day ++ ": " ++ body

@@ -1,31 +1,33 @@
 module Model
-  ( AoCAnswer,
-    AoCDay,
-    Timing (..),
-    Part (Part),
-    Parts,
-    Year,
-    errMsgParts,
+  ( AOCDayPart (AOCDayPart, AOCDayPartTiming),
+    AOCDayParts,
+    AOCPartsResult,
+    Timing (Picosecond, Nanosecond, Microsecond, Millisecond, Second, Minute),
   )
 where
 
 import Data.Text qualified as T
 
-type Year = Int
-
-type Day = Int
-
-type AoCDay = (Year, Day)
-
-data Part = forall a. (Show a) => Part (T.Text -> a)
-
-type Parts = (Part, Part)
-
 data Timing
-  = Value Double
-  | NoValue
+  = Picosecond Double
+  | Nanosecond Double
+  | Microsecond Double
+  | Millisecond Double
+  | Second Double
+  | Minute Double
 
-type AoCAnswer = (String, Timing)
+instance Show Timing where
+  show (Picosecond t) = show t ++ "ps"
+  show (Nanosecond t) = show t ++ "ns"
+  show (Microsecond t) = show t ++ "μs"
+  show (Millisecond t) = show t ++ "ms"
+  show (Second t) = show t ++ "s"
+  show (Minute t) = show t ++ "m"
 
-errMsgParts :: forall a. (Show a) => a -> Parts
-errMsgParts s = (Part . const $ s, Part . const $ s)
+data AOCDayPart
+  = forall a. (Show a) => AOCDayPart (T.Text -> a)
+  | forall a. (Show a) => AOCDayPartTiming (T.Text -> a) Timing
+
+type AOCDayParts = (AOCDayPart, AOCDayPart)
+
+type AOCPartsResult = Either String AOCDayParts

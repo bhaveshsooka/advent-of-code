@@ -21,29 +21,27 @@ import AOC2024.Day22 qualified as Day22
 import AOC2024.Day23 qualified as Day23
 import AOC2024.Day24 qualified as Day24
 import AOC2024.Day25 qualified as Day25
-import Model (Part (Part), Parts, errMsgParts)
+import Model (AOCDayPart (AOCDayPart), AOCPartsResult)
 
-getParts :: Int -> Parts
+getParts :: Int -> AOCPartsResult
 getParts day =
   case day of
-    01 -> (Part Day01.part1, Part Day01.part2)
-    02 -> (Part Day02.part1, Part Day02.part2)
-    03 -> (Part Day03.part1, Part Day03.part2)
-    04 -> (Part Day04.part1, Part Day04.part2)
-    05 -> (Part Day05.part1, Part Day05.part2)
-    06 -> (Part Day06.part1, Part Day06.part2)
-    07 -> (Part Day07.part1, Part Day07.part2)
-    08 -> (Part Day08.part1, Part Day08.part2)
-    09 -> (Part Day09.part1, Part Day09.part2)
-    10 -> (Part Day10.part1, Part Day10.part2)
-    11 -> (Part Day11.part1, Part Day11.part2)
-    13 -> (Part Day13.part1, Part Day13.part2)
-    14 -> (Part Day14.part1, Part Day14.part2)
-    17 -> (Part Day17.part1, Part Day17.part2)
-    22 -> (Part Day22.part1, Part Day22.part2)
-    23 -> (Part Day23.part1, Part Day23.part2)
-    24 -> (Part Day24.part1, Part Day24.part2)
-    25 -> (Part Day25.part1, Part Day25.part2)
-    _ -> errMsgParts errMsg
-  where
-    errMsg = "Day " <> show day <> " for 2024 has not been attempted yet"
+    01 -> Right (AOCDayPart Day01.part1, AOCDayPart Day01.part2)
+    02 -> Right (AOCDayPart Day02.part1, AOCDayPart Day02.part2)
+    03 -> Right (AOCDayPart Day03.part1, AOCDayPart Day03.part2)
+    04 -> Right (AOCDayPart Day04.part1, AOCDayPart Day04.part2)
+    05 -> Right (AOCDayPart Day05.part1, AOCDayPart Day05.part2)
+    06 -> Right (AOCDayPart Day06.part1, AOCDayPart Day06.part2)
+    07 -> Right (AOCDayPart Day07.part1, AOCDayPart Day07.part2)
+    08 -> Right (AOCDayPart Day08.part1, AOCDayPart Day08.part2)
+    09 -> Right (AOCDayPart Day09.part1, AOCDayPart Day09.part2)
+    10 -> Right (AOCDayPart Day10.part1, AOCDayPart Day10.part2)
+    11 -> Right (AOCDayPart Day11.part1, AOCDayPart Day11.part2)
+    13 -> Right (AOCDayPart Day13.part1, AOCDayPart Day13.part2)
+    14 -> Right (AOCDayPart Day14.part1, AOCDayPart Day14.part2)
+    17 -> Right (AOCDayPart Day17.part1, AOCDayPart Day17.part2)
+    22 -> Right (AOCDayPart Day22.part1, AOCDayPart Day22.part2)
+    23 -> Right (AOCDayPart Day23.part1, AOCDayPart Day23.part2)
+    24 -> Right (AOCDayPart Day24.part1, AOCDayPart Day24.part2)
+    25 -> Right (AOCDayPart Day25.part1, AOCDayPart Day25.part2)
+    _ -> Left $ "Day " <> show day <> " for 2024 has not been attempted yet"

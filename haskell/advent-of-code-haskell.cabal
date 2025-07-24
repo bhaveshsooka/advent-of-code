@@ -128,18 +128,24 @@ executable advent-of-code-haskell
 
   -- Other library packages from which modules are imported.
   build-depends:
+    , aeson
     , base
     , base16-bytestring
     , bytestring
     , containers
     , cryptohash-md5
+    , directory
+    , dotenv
     , hashable
+    , http-client
+    , http-client-tls
+    , http-types
     , parsec
+    , scientific
     , text
+    , time
     , unordered-containers
     , vector
-    , aeson
-    , scientific
 
   -- Directories containing source files.
   hs-source-dirs:   app
