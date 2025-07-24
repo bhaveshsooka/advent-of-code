@@ -1,5 +1,5 @@
 module Util.AOCHelpers
-  ( printAoCDay,
+  ( printDay,
     printYear,
     printYears,
   )
@@ -39,11 +39,11 @@ printYears currentYear = mapM_ printYear [2015 .. currentYear]
 printYear :: Int -> IO ()
 printYear y = do
   putStrLn $ "---------Advent of Code " <> show y <> "---------"
-  mapM_ printAoCDay ([(y, day) | day <- [1 .. 25]])
+  mapM_ printDay ([(y, day) | day <- [1 .. 25]])
   putStrLn ""
 
-printAoCDay :: (Int, Int) -> IO ()
-printAoCDay (year, day) = do
+printDay :: (Int, Int) -> IO ()
+printDay (year, day) = do
   result <- getAoCResult (year, day)
   (p1, p2) <- case result of
     Left err -> pure (err, err)

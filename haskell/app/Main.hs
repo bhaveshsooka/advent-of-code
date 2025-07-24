@@ -3,7 +3,7 @@ module Main where
 import Data.Time.Calendar (toGregorian)
 import Data.Time.Clock (UTCTime (utctDay), getCurrentTime)
 import Text.Read (readMaybe)
-import Util.AOCHelpers (printAoCDay, printYear, printYears)
+import Util.AOCHelpers (printDay, printYear, printYears)
 import Configuration.Dotenv (loadFile, defaultConfig)
 
 main :: IO ()
@@ -26,7 +26,7 @@ handleYear year = do
 handleDay :: Int -> Int -> IO ()
 handleDay year day = do
   let aoCDay = (year, day)
-  printAoCDay aoCDay
+  printDay aoCDay
 
 whatToPrint :: (Read a, Show a, Ord a) => String -> String -> a -> a -> IO (Maybe a)
 whatToPrint prompt errMsg minVal maxVal = do
