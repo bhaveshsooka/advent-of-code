@@ -14,24 +14,16 @@ import GHC.IO (unsafePerformIO)
 import qualified Data.Vector.Unboxed as V
 
 part1 :: T.Text -> Int
-part1 input = V.sum finalGrid
-  where
-    instructions = parseInstructions input
-    gridSize = 1000
-    finalGrid = unsafePerformIO $ do
-      grid <- MV.replicate (gridSize * gridSize) 0 :: IO (MV.IOVector Int)
-      mapM_ (processInstruction False grid gridSize) instructions
-      V.freeze grid
+part1 input = unsafePerformIO $ do
+  grid <- MV.replicate (1000 * 1000) 0 :: IO (MV.IOVector Int)
+  mapM_ (processInstruction False grid 1000) (parseInstructions input)
+  V.sum <$> V.freeze grid
 
 part2 :: T.Text -> Int
-part2 input = V.sum finalGrid
-  where
-    instructions = parseInstructions input
-    gridSize = 1000
-    finalGrid = unsafePerformIO $ do
-      grid <- MV.replicate (gridSize * gridSize) 0 :: IO (MV.IOVector Int)
-      mapM_ (processInstruction True grid gridSize) instructions
-      V.freeze grid
+part2 input = unsafePerformIO $ do
+  grid <- MV.replicate (1000 * 1000) 0 :: IO (MV.IOVector Int)
+  mapM_ (processInstruction True grid 1000) (parseInstructions input)
+  V.sum <$> V.freeze grid
 
 data Instruction = TurnOn Block | TurnOff Block | Toggle Block deriving (Show, Eq)
 
