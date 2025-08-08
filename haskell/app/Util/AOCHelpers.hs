@@ -41,26 +41,27 @@ printYears currentYear = mapM_ printYear [2015 .. currentYear]
 
 printYear :: Int -> IO ()
 printYear y = do
-  putStrLn "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-  printf "┃ Advent of Code %30d ┃\n" y
-  putStrLn "┣━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┫"
-  putStrLn "┃   Day ┃       Part 1 Time ┃       Part 2 Time ┃"
-  putStrLn "┣━━━━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━┫"
-  mapM_
-    ( \day -> do
-        let dayStr = if day < 10 then "0" ++ show day else show day
-        result <- getAoCResult (y, day)
-        case result of
-          Left _ -> printf "┃ %5s ┃ %17s ┃ %17s ┃\n" dayStr "N/A" "N/A"
-          Right (part1, part2) -> do
-            inputData <- fetchData (y, day)
-            (_, t1) <- benchPart part1 inputData
-            (_, t2) <- benchPart part2 inputData
-            printf "┃ %5s ┃ %17s ┃ %17s ┃\n" dayStr (formatNominalDiffTime t1) (formatNominalDiffTime t2)
-    )
-    [1 .. 25]
-  putStrLn "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
-  putStrLn ""
+  printf "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n"
+  printf "┃ Advent of Code%2s                       %4d ┃\n" "" y
+  printf "┣━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┫\n"
+  printf "┃ Day ┃       Part 1 Time ┃       Part 2 Time ┃\n"
+  printf "┣━━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━┫\n"
+  mapM_ printTableRow [1 .. 25]
+  printf "┗━━━━━┻━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━┛\n"
+  where
+    extractAndRunParts day part1 part2 = do
+      inputData <- fetchData (y, day)
+      (_, t1) <- benchPart part1 inputData
+      (_, t2) <- benchPart part2 inputData
+      pure (formatNominalDiffTime t1, formatNominalDiffTime t2)
+    processAoCResult result day = case result of
+      Left _ -> pure ("N/A", "N/A")
+      Right (part1, part2) -> extractAndRunParts day part1 part2
+    printTableRow day = do
+      let dayStr = if day < 10 then "0" ++ show day else show day
+      result <- getAoCResult (y, day)
+      (t1, t2) <- processAoCResult result day
+      printf "┃ %3s ┃ %17s ┃ %17s ┃\n" dayStr t1 t2
 
 printDay :: (Int, Int) -> IO ()
 printDay (year, day) = do
