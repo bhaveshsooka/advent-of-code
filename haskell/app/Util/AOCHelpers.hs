@@ -40,55 +40,49 @@ printYears :: Int -> IO ()
 printYears currentYear = mapM_ printYear [2015 .. currentYear]
 
 printYear :: Int -> IO ()
-printYear y = do
+printYear year = printTable False (year, [1 .. 25])
+
+printDay :: (Int, Int) -> IO ()
+printDay (year, day) = printTable True (year, [day])
+
+printTable :: Bool -> (Int, [Int]) -> IO ()
+printTable True (year, days) = do
+  printf "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n"
+  printf "┃ Advent of Code%2s                                                               %4d ┃\n" "" year
+  printf "┣━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┫\n"
+  printf "┃ Day ┃     Part 1 Answer ┃       Part 1 Time ┃     Part 2 Answer ┃       Part 2 Time ┃\n"
+  printf "┣━━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━┫\n"
+  mapM_ (printTableRow True year) days
+  printf "┗━━━━━┻━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━┛\n"
+printTable False (year, days) = do
   printf "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n"
-  printf "┃ Advent of Code%2s                       %4d ┃\n" "" y
+  printf "┃ Advent of Code%2s                       %4d ┃\n" "" year
   printf "┣━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┫\n"
   printf "┃ Day ┃       Part 1 Time ┃       Part 2 Time ┃\n"
   printf "┣━━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━┫\n"
-  mapM_ printTableRow [1 .. 25]
+  mapM_ (printTableRow False year) days
   printf "┗━━━━━┻━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━┛\n"
-  where
-    extractAndRunParts day part1 part2 = do
-      inputData <- fetchData (y, day)
-      (_, t1) <- benchPart part1 inputData
-      (_, t2) <- benchPart part2 inputData
-      pure (formatNominalDiffTime t1, formatNominalDiffTime t2)
-    processAoCResult result day = case result of
-      Left _ -> pure ("N/A", "N/A")
-      Right (part1, part2) -> extractAndRunParts day part1 part2
-    printTableRow day = do
-      let dayStr = if day < 10 then "0" ++ show day else show day
-      result <- getAoCResult (y, day)
-      (t1, t2) <- processAoCResult result day
-      printf "┃ %3s ┃ %17s ┃ %17s ┃\n" dayStr t1 t2
 
-printDay :: (Int, Int) -> IO ()
-printDay (year, day) = do
+printTableRow :: Bool -> Int -> Int -> IO ()
+printTableRow includeAnswers year day = do
+  let dayStr = if day < 10 then "0" ++ show day else show day
   result <- getAoCResult (year, day)
-  case result of
-    Left err -> do
-      printf err
-      printf "\n"
-    Right (part1, part2) -> do
+  ((r1, t1), (r2, t2)) <- processAoCResult result
+  if includeAnswers
+    then printf "┃ %3s ┃ %17s ┃ %17s ┃ %17s ┃ %17s ┃\n" dayStr r1 t1 r2 t2
+    else printf "┃ %3s ┃ %17s ┃ %17s ┃\n" dayStr t1 t2
+  where
+    processAoCResult result = case result of
+      Left err -> pure ((err, "N/A"), (err, "N/A"))
+      Right (part1, part2) -> extractAndRunParts part1 part2
+    extractAndRunParts part1 part2 = do
       inputData <- fetchData (year, day)
-      (p1, t1) <- benchPart part1 inputData
-      (p2, t2) <- benchPart part2 inputData
-      let resultText =
-            "Year "
-              ++ show year
-              ++ ", Day "
-              ++ (if day < 10 then "0" ++ show day else show day)
-              ++ " -> Part 1: "
-              ++ p1
-              ++ ", Time: "
-              ++ formatNominalDiffTime t1
-              ++ ", Part 2: "
-              ++ p2
-              ++ ", Time: "
-              ++ formatNominalDiffTime t2
-      printf resultText
-      printf "\n"
+      (r1, t1) <- benchPart part1 inputData
+      (r2, t2) <- benchPart part2 inputData
+      pure
+        ( (show r1, formatNominalDiffTime t1),
+          (show r2, formatNominalDiffTime t2)
+        )
 
 benchPart :: AOCDayPart -> T.Text -> IO (String, NominalDiffTime)
 benchPart (AOCDayPart part) input = do
