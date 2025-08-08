@@ -17,7 +17,9 @@ import Data.ByteString.Char8 qualified as Char8 (pack)
 import Data.ByteString.Lazy.Char8 qualified as LChar8 (unpack)
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as TE
-import Model (AOCDayPart (AOCDayPart, AOCDayPartTiming), AOCPartsResult)
+import Data.Time.Clock (NominalDiffTime, diffUTCTime, getCurrentTime)
+import GHC.IO (evaluate)
+import Model (AOCDayPart (AOCDayPart), AOCPartsResult)
 import Network.HTTP.Client
   ( httpLbs,
     newManager,
@@ -32,6 +34,7 @@ import Network.HTTP.Types.Status (statusCode)
 import System.Directory (createDirectory, doesDirectoryExist, doesFileExist)
 import System.Environment (getEnv)
 import Text.Printf (printf)
+import Util.TimeUtils (formatNominalDiffTime)
 
 printYears :: Int -> IO ()
 printYears currentYear = mapM_ printYear [2015 .. currentYear]
@@ -51,16 +54,30 @@ printDay (year, day) = do
       printf "\n"
     Right (part1, part2) -> do
       inputData <- fetchData (year, day)
-      p1 <- runPart part1 inputData
-      p2 <- runPart part2 inputData
-      printf "Year %d, Day %02d -> Part 1: %s, Part 2: %s" year day p1 p2
+      (p1, t1) <- benchPart part1 inputData
+      (p2, t2) <- benchPart part2 inputData
+      let resultText =
+            "Year "
+              ++ show year
+              ++ ", Day "
+              ++ (if day < 10 then "0" ++ show day else show day)
+              ++ " -> Part 1: "
+              ++ p1
+              ++ ", Time: "
+              ++ formatNominalDiffTime t1
+              ++ ", Part 2: "
+              ++ p2
+              ++ ", Time: "
+              ++ formatNominalDiffTime t2
+      printf resultText
       printf "\n"
 
-runPart :: AOCDayPart -> T.Text -> IO String
-runPart (AOCDayPart part) input =
-  pure $ show $ part input
-runPart (AOCDayPartTiming part timing) input =
-  pure $ show timing ++ ": " ++ show (part input)
+benchPart :: AOCDayPart -> T.Text -> IO (String, NominalDiffTime)
+benchPart (AOCDayPart part) input = do
+  start <- getCurrentTime
+  r <- evaluate (part input) -- only forces to WHNF
+  end <- getCurrentTime
+  pure (show r, diffUTCTime end start)
 
 getAoCResult :: (Int, Int) -> IO AOCPartsResult
 getAoCResult (year, day) =

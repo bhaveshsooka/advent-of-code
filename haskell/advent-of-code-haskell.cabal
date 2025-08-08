@@ -122,6 +122,7 @@ executable advent-of-code-haskell
     Util.GridUtils.DirectionVonNeumann
     Util.GridUtils.Grid
     Util.ParseHelpers
+    Util.TimeUtils
 
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:
