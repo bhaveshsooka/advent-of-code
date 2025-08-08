@@ -41,8 +41,25 @@ printYears currentYear = mapM_ printYear [2015 .. currentYear]
 
 printYear :: Int -> IO ()
 printYear y = do
-  putStrLn $ "---------Advent of Code " <> show y <> "---------"
-  mapM_ printDay ([(y, day) | day <- [1 .. 25]])
+  putStrLn "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+  printf "┃ Advent of Code %30d ┃\n" y
+  putStrLn "┣━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┫"
+  putStrLn "┃   Day ┃       Part 1 Time ┃       Part 2 Time ┃"
+  putStrLn "┣━━━━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━┫"
+  mapM_
+    ( \day -> do
+        let dayStr = if day < 10 then "0" ++ show day else show day
+        result <- getAoCResult (y, day)
+        case result of
+          Left _ -> printf "┃ %5s ┃ %17s ┃ %17s ┃\n" dayStr "N/A" "N/A"
+          Right (part1, part2) -> do
+            inputData <- fetchData (y, day)
+            (_, t1) <- benchPart part1 inputData
+            (_, t2) <- benchPart part2 inputData
+            printf "┃ %5s ┃ %17s ┃ %17s ┃\n" dayStr (formatNominalDiffTime t1) (formatNominalDiffTime t2)
+    )
+    [1 .. 25]
+  putStrLn "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
   putStrLn ""
 
 printDay :: (Int, Int) -> IO ()
@@ -118,7 +135,5 @@ downloadFile (year, day) filename = do
   resp <- httpLbs req0 manager
   let body :: String = LChar8.unpack $ responseBody resp
   case statusCode (responseStatus resp) of
-    200 -> do
-      writeFile filename body
-    _ -> do
-      error $ "Failed to download input for year " ++ show year ++ " day " ++ show day ++ ": " ++ body
+    200 -> writeFile filename body
+    _ -> error $ "Failed to download input for year " ++ show year ++ " day " ++ show day ++ ": " ++ body
