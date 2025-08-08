@@ -75,7 +75,7 @@ printDay (year, day) = do
 benchPart :: AOCDayPart -> T.Text -> IO (String, NominalDiffTime)
 benchPart (AOCDayPart part) input = do
   start <- getCurrentTime
-  r <- evaluate (part input) -- only forces to WHNF
+  r <- evaluate (part input)
   end <- getCurrentTime
   pure (show r, diffUTCTime end start)
 

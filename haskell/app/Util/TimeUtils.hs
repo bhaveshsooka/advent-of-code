@@ -19,14 +19,16 @@ formatNominalDiffTime diff
   | diff < ns = roundFixed (nominalDiffTimeToSeconds diff * 10 ^ (12 :: Integer)) <> "ps"
   | diff < us = roundFixed (nominalDiffTimeToSeconds diff * 10 ^ (9 :: Integer)) <> "ns"
   | diff < ms = roundFixed (nominalDiffTimeToSeconds diff * 10 ^ (6 :: Integer)) <> "us"
-  | diff < second = roundFixed (nominalDiffTimeToSeconds diff * 10 ^ (3 :: Integer)) <> "ms"
-  | otherwise = roundFixed (nominalDiffTimeToSeconds diff) <> "s"
+  | diff < s = roundFixed (nominalDiffTimeToSeconds diff * 10 ^ (3 :: Integer)) <> "ms"
+  | diff < m = roundFixed (nominalDiffTimeToSeconds diff) <> "s"
+  | otherwise = roundFixed (nominalDiffTimeToSeconds diff / 60) <> "m"
 
 roundFixed :: Fixed E12 -> String
-roundFixed f = printf "%.1f" (realToFrac f :: Double)
+roundFixed f = printf "%.2f" (realToFrac f :: Double)
 
-second, ms, us, ns, ps :: NominalDiffTime
-second = secondsToNominalDiffTime 1
+m, s, ms, us, ns, ps :: NominalDiffTime
+m = secondsToNominalDiffTime 60
+s = secondsToNominalDiffTime 1
 ms = secondsToNominalDiffTime 0.001
 us = secondsToNominalDiffTime 0.000001
 ns = secondsToNominalDiffTime 0.000000001
