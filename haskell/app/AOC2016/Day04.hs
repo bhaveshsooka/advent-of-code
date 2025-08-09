@@ -8,7 +8,7 @@ import Data.List (elemIndex, find, isPrefixOf, nub, sortBy)
 import Data.Ord (comparing)
 import Data.Text qualified as T
 import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = foldr (\(Room _ sectorId _) acc -> acc + sectorId) 0 (filter isRealRoom (parseRooms input))

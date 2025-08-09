@@ -9,7 +9,7 @@ import Data.HashMap.Strict qualified as M
 import Data.List (isPrefixOf)
 import Data.Text qualified as T
 import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = M.foldrWithKey zGatetoDec 0 $ processGates memo gates

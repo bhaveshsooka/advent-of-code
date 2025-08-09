@@ -7,7 +7,7 @@ where
 import Control.Monad (replicateM)
 import Data.Text qualified as T
 import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = sum $ (\(Equation r _) -> r) <$> filter (evalEquation False) equations

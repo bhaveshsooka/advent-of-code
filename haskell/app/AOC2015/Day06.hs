@@ -8,7 +8,7 @@ import Data.Text qualified as T
 import Data.Vector.Unboxed.Mutable qualified as MV
 import Text.Parsec qualified as P
 import Util.GridUtils.Coord (Block, Coord (..))
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 import Control.Monad (forM_)
 import GHC.IO (unsafePerformIO)
 import qualified Data.Vector.Unboxed as V

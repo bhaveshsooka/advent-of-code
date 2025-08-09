@@ -8,7 +8,7 @@ import Data.Bits (Bits (xor))
 import Data.Text qualified as T
 import Data.Vector qualified as V
 import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = foldr ((+) . get2000thSecret) 0 $ parseSecretNumbers input

@@ -1,10 +1,10 @@
 module Main where
 
+import Configuration.Dotenv (defaultConfig, loadFile)
 import Data.Time.Calendar (toGregorian)
 import Data.Time.Clock (UTCTime (utctDay), getCurrentTime)
 import Text.Read (readMaybe)
-import Util.AOCHelpers (printDay, printYear, printYears)
-import Configuration.Dotenv (loadFile, defaultConfig)
+import Util.AOCUtils (printDay, printYear, printYears)
 
 main :: IO ()
 main = do

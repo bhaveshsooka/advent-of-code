@@ -11,7 +11,7 @@ import Data.Maybe (mapMaybe)
 import Data.Set qualified as S
 import Data.Text qualified as T
 import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = fst $ minimumBy (compare `on` fst) fullPaths

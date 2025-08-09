@@ -1,4 +1,4 @@
-module Util.AOCHelpers
+module Util.AOCUtils
   ( printDay,
     printYear,
     printYears,
@@ -13,25 +13,18 @@ import AOC2023.Module qualified as AOC2023
 import AOC2024.Module qualified as AOC2024
 import Control.Monad (unless)
 import Data.ByteString qualified as B
-import Data.ByteString.Char8 qualified as Char8 (pack)
-import Data.ByteString.Lazy.Char8 qualified as LChar8 (unpack)
+import Data.ByteString.Char8 qualified as C8
+import Data.ByteString.Lazy.Char8 qualified as LC8
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as TE
-import Data.Time.Clock (NominalDiffTime, diffUTCTime, getCurrentTime)
+import Data.Time.Clock qualified as Clock
 import GHC.IO (evaluate)
 import Model (AOCDayPart (AOCDayPart), AOCPartsResult)
-import Network.HTTP.Client
-  ( httpLbs,
-    newManager,
-    parseRequest,
-    requestHeaders,
-    responseBody,
-    responseStatus,
-  )
+import Network.HTTP.Client qualified as HTTP
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Network.HTTP.Types.Header (hCookie)
 import Network.HTTP.Types.Status (statusCode)
-import System.Directory (createDirectory, doesDirectoryExist, doesFileExist)
+import System.Directory qualified as Dir
 import System.Environment (getEnv)
 import Text.Printf (printf)
 import Util.TimeUtils (formatNominalDiffTime)
@@ -66,7 +59,7 @@ printTable False (year, days) = do
 printTableRow :: Bool -> Int -> Int -> IO ()
 printTableRow includeAnswers year day = do
   let dayStr = if day < 10 then "0" ++ show day else show day
-  result <- getAoCResult (year, day)
+  result <- getAOCPartsResult (year, day)
   ((r1, t1), (r2, t2)) <- processAoCResult result
   if includeAnswers
     then printf "┃ %3s ┃ %17s ┃ %17s ┃ %17s ┃ %17s ┃\n" dayStr r1 t1 r2 t2
@@ -84,15 +77,15 @@ printTableRow includeAnswers year day = do
           (show r2, formatNominalDiffTime t2)
         )
 
-benchPart :: AOCDayPart -> T.Text -> IO (String, NominalDiffTime)
+benchPart :: AOCDayPart -> T.Text -> IO (String, Clock.NominalDiffTime)
 benchPart (AOCDayPart part) input = do
-  start <- getCurrentTime
+  start <- Clock.getCurrentTime
   r <- evaluate (part input)
-  end <- getCurrentTime
-  pure (show r, diffUTCTime end start)
+  end <- Clock.getCurrentTime
+  pure (show r, Clock.diffUTCTime end start)
 
-getAoCResult :: (Int, Int) -> IO AOCPartsResult
-getAoCResult (year, day) =
+getAOCPartsResult :: (Int, Int) -> IO AOCPartsResult
+getAOCPartsResult (year, day) =
   pure $ case year of
     2015 -> AOC2015.getParts day
     2016 -> AOC2016.getParts day
@@ -109,13 +102,13 @@ fetchData (year, day) = do
       paddedDay = if day < 10 then "0" <> show day else show day
       local_file = paddedDay <> ".txt"
   _ <- do
-    exists <- doesDirectoryExist dataDir
-    unless exists $ createDirectory dataDir
+    exists <- Dir.doesDirectoryExist dataDir
+    unless exists $ Dir.createDirectory dataDir
   _ <- do
-    exists <- doesDirectoryExist yearDir
-    unless exists $ createDirectory yearDir
+    exists <- Dir.doesDirectoryExist yearDir
+    unless exists $ Dir.createDirectory yearDir
   _ <- do
-    exists <- doesFileExist (yearDir <> local_file)
+    exists <- Dir.doesFileExist (yearDir <> local_file)
     unless exists $ downloadFile (year, day) (yearDir <> local_file)
   byteStrData <- B.readFile (yearDir <> local_file)
   pure $ TE.decodeUtf8 byteStrData
@@ -124,11 +117,11 @@ downloadFile :: (Int, Int) -> String -> IO ()
 downloadFile (year, day) filename = do
   let url = "https://adventofcode.com/" <> show year <> "/day/" <> show day <> "/input"
   cookie <- getEnv "COOKIE"
-  req <- parseRequest url
-  let req0 = req {requestHeaders = [(hCookie, Char8.pack cookie)]}
-  manager <- newManager tlsManagerSettings
-  resp <- httpLbs req0 manager
-  let body :: String = LChar8.unpack $ responseBody resp
-  case statusCode (responseStatus resp) of
+  req <- HTTP.parseRequest url
+  let req0 = req {HTTP.requestHeaders = [(hCookie, C8.pack cookie)]}
+  manager <- HTTP.newManager tlsManagerSettings
+  resp <- HTTP.httpLbs req0 manager
+  let body :: String = LC8.unpack $ HTTP.responseBody resp
+  case statusCode (HTTP.responseStatus resp) of
     200 -> writeFile filename body
     _ -> error $ "Failed to download input for year " ++ show year ++ " day " ++ show day ++ ": " ++ body

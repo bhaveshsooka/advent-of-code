@@ -9,7 +9,7 @@ import Data.Map qualified as M
 import Data.Text qualified as T
 import Data.Word (Word16)
 import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Word16
 part1 input = processSignals (parseSignals input) M.empty M.! "a"

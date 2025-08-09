@@ -116,12 +116,12 @@ executable advent-of-code-haskell
     AOC2024.Day25
     AOC2024.Module
     Model
-    Util.AOCHelpers
+    Util.AOCUtils
     Util.GridUtils.Coord
     Util.GridUtils.DirectionMoore
     Util.GridUtils.DirectionVonNeumann
     Util.GridUtils.Grid
-    Util.ParseHelpers
+    Util.ParseUtils
     Util.TimeUtils
 
   -- LANGUAGE extensions used by modules in this package.

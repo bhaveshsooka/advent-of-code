@@ -8,7 +8,7 @@ import Data.Bifunctor qualified as BF
 import Data.List (sort)
 import Data.Text qualified as T
 import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = sum $ zipWith (\x y -> abs (x - y)) one two

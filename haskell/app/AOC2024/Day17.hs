@@ -13,7 +13,7 @@ import Data.Bits (Bits (xor))
 import Data.List (singleton, (!?))
 import Data.Text qualified as T
 import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> String
 part1 input = fmtProgOutput (\x -> take (length x - 1) x) foldFn "," "" $ processProgram registers [] 0 program

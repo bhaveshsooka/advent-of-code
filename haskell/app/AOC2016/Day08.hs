@@ -9,7 +9,7 @@ import Data.Vector qualified as V
 import Text.Parsec qualified as P
 import Util.GridUtils.Coord (Coord (..))
 import Util.GridUtils.Grid ( Grid, showGrid, newGrid )
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = V.foldr (\(_, c) acc -> if c == '#' then acc + 1 else acc) 0 finalGrid

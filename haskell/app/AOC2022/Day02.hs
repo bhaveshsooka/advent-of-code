@@ -6,7 +6,7 @@ where
 
 import Data.Text qualified as T
 import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = foldr (\(a, b) acc -> acc + roundScore P1 a b) 0 (parseRounds input)

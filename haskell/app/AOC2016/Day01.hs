@@ -8,7 +8,7 @@ import Data.Text qualified as T
 import Text.Parsec qualified as P
 import Util.GridUtils.Coord (Coord (Coord), manhattanDistance)
 import Util.GridUtils.DirectionVonNeumann (Direction (..))
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = manhattanDistance (Coord 0 0) $ fst $ last path

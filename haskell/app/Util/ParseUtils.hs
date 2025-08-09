@@ -1,4 +1,4 @@
-module Util.ParseHelpers
+module Util.ParseUtils
   ( parseAoCInput,
   )
 where

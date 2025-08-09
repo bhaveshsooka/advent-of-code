@@ -7,7 +7,7 @@ where
 import Data.Maybe (catMaybes)
 import Data.Text qualified as T
 import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = sum $ sumPart1 0 <$> parseOps input

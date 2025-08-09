@@ -7,7 +7,7 @@ where
 import Data.List (sort)
 import Data.Text qualified as T
 import Text.Parsec qualified as P
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = foldr (\b acc -> acc + surfaceArea b + smallestSide b) 0 $ parseDimensionsList input

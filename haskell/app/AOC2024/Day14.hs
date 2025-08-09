@@ -9,7 +9,7 @@ import Data.Hashable (Hashable (hashWithSalt))
 import Data.Text qualified as T
 import Text.Parsec qualified as P
 import Util.GridUtils.Coord (Coord (Coord))
-import Util.ParseHelpers (parseAoCInput)
+import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
 part1 input = M.foldrWithKey (\q v acc -> if q /= Mid then acc * length v else acc) 1 quadrantsMap
