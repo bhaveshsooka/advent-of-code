@@ -25,4 +25,4 @@ formatNominalDiffTime diff
     us = 1e-6
     ms = 1e-3
     s = 1e0
-    m = 60
+    m = 60e0
