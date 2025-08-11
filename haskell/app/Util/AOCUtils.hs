@@ -60,14 +60,13 @@ printTableRow :: Bool -> Int -> Int -> IO ()
 printTableRow includeAnswers year day = do
   let dayStr = if day < 10 then "0" ++ show day else show day
   result <- getAOCPartsResult (year, day)
-  ((r1, t1), (r2, t2)) <- processAoCResult result
+  ((r1, t1), (r2, t2)) <- case result of
+    Left err -> pure ((err, "N/A"), (err, "N/A"))
+    Right (part1, part2) -> extractAndRunParts part1 part2
   if includeAnswers
     then printf "┃ %3s ┃ %17s ┃ %17s ┃ %17s ┃ %17s ┃\n" dayStr r1 t1 r2 t2
     else printf "┃ %3s ┃ %17s ┃ %17s ┃\n" dayStr t1 t2
   where
-    processAoCResult result = case result of
-      Left err -> pure ((err, "N/A"), (err, "N/A"))
-      Right (part1, part2) -> extractAndRunParts part1 part2
     extractAndRunParts part1 part2 = do
       inputData <- fetchData (year, day)
       (r1, t1) <- benchPart part1 inputData
