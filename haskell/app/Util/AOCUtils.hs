@@ -110,7 +110,7 @@ fetchData (year, day) = do
     exists <- Dir.doesFileExist (yearDir <> local_file)
     unless exists $ downloadFile (year, day) (yearDir <> local_file)
   byteStrData <- B.readFile (yearDir <> local_file)
-  pure $ TE.decodeUtf8 byteStrData
+  pure $ (T.strip .TE.decodeUtf8) byteStrData
 
 downloadFile :: (Int, Int) -> String -> IO ()
 downloadFile (year, day) filename = do
