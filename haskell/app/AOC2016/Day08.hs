@@ -19,8 +19,8 @@ part1 input = V.foldr (\(_, c) acc -> if c == '#' then acc + 1 else acc) 0 final
     rows = 6
     grid = newGrid cols rows '.'
 
-part2 :: T.Text -> String
-part2 input = showGrid show (finalGrid, rows)
+part2 :: T.Text -> T.Text
+part2 input = showGrid T.singleton (finalGrid, rows)
   where
     finalGrid = foldl (\acc op -> processOperation (acc, cols, rows) op) grid $ parseOperations input
     cols = 50

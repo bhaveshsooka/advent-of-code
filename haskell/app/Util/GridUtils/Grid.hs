@@ -20,11 +20,11 @@ type UnboxedGrid a = U.Vector a
 
 type GridInfo a = (Grid a, Int, Int)
 
-showGrid :: (a -> String) -> (Grid a, Int) -> String
-showGrid f (grid, rowLen) = foldl foldFn "" [0 .. rowLen - 1]
+showGrid :: (a -> T.Text) -> (Grid a, Int) -> T.Text
+showGrid f (grid, rowLen) = foldl foldFn T.empty [0 .. rowLen - 1]
   where
-    foldFn acc row = acc <> stringifyRow row <> "\n"
-    stringifyRow row = V.foldl (stringRowFold row) "" grid
+    foldFn acc row = acc <> stringifyRow row <> T.pack "\n"
+    stringifyRow row = V.foldl (stringRowFold row) T.empty grid
     stringRowFold row acc (Coord x _, c) = if x == row then acc <> f c else acc
 
 newGrid :: Int -> Int -> a -> Grid a
