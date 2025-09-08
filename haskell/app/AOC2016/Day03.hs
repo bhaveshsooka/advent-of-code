@@ -33,6 +33,6 @@ parseTriangles :: T.Text -> [Triangle]
 parseTriangles input = parseAoCInput input trianglesParser "trianglesParser"
   where
     spaceParser = P.many1 (P.string " ")
-    sideParser = read <$> (spaceParser *> P.many1 P.digit)
+    sideParser = read <$> (P.optional spaceParser *> P.many1 P.digit)
     triangleParser = Triangle <$> sideParser <*> sideParser <*> sideParser
     trianglesParser = P.many1 $ triangleParser <* P.optional P.newline
