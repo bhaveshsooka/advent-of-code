@@ -4,10 +4,10 @@ module AOC2018.Module
 where
 
 import AOC2018.Day01 qualified as Day01
-import Model (AOCDayPart (AOCDayPart), AOCPartsResult)
+import Model (AOCDayImpl (AOCNoDay, AOCPartsFunction))
 
-getParts :: Int -> AOCPartsResult
+getParts :: Int -> AOCDayImpl
 getParts day =
   case day of
-    01 -> Right (AOCDayPart Day01.part1, AOCDayPart Day01.part2)
-    _ -> Left $ "Day " <> show day <> " for 2018 has not been attempted yet"
+    01 -> AOCPartsFunction Day01.part1 Day01.part2
+    _ -> AOCNoDay

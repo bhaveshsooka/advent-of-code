@@ -15,21 +15,21 @@ import AOC2015.Day09 qualified as Day09
 import AOC2015.Day10 qualified as Day10
 import AOC2015.Day11 qualified as Day11
 import AOC2015.Day12 qualified as Day12
-import Model (AOCDayPart (AOCDayPart), AOCPartsResult)
+import Model (AOCDayImpl (AOCNoDay, AOCPartsFunction))
 
-getParts :: Int -> AOCPartsResult
+getParts :: Int -> AOCDayImpl
 getParts day =
   case day of
-    01 -> Right (AOCDayPart Day01.part1, AOCDayPart Day01.part2)
-    02 -> Right (AOCDayPart Day02.part1, AOCDayPart Day02.part2)
-    03 -> Right (AOCDayPart Day03.part1, AOCDayPart Day03.part2)
-    04 -> Right (AOCDayPart Day04.part1, AOCDayPart Day04.part2)
-    05 -> Right (AOCDayPart Day05.part1, AOCDayPart Day05.part2)
-    06 -> Right (AOCDayPart Day06.part1, AOCDayPart Day06.part2)
-    07 -> Right (AOCDayPart Day07.part1, AOCDayPart Day07.part2)
-    08 -> Right (AOCDayPart Day08.part1, AOCDayPart Day08.part2)
-    09 -> Right (AOCDayPart Day09.part1, AOCDayPart Day09.part2)
-    10 -> Right (AOCDayPart Day10.part1, AOCDayPart Day10.part2)
-    11 -> Right (AOCDayPart Day11.part1, AOCDayPart Day11.part2)
-    12 -> Right (AOCDayPart Day12.part1, AOCDayPart Day12.part2)
-    _ -> Left $ "Day " <> show day <> " for 2015 has not been attempted yet"
+    01 -> AOCPartsFunction Day01.part1 Day01.part2
+    02 -> AOCPartsFunction Day02.part1 Day02.part2
+    03 -> AOCPartsFunction Day03.part1 Day03.part2
+    04 -> AOCPartsFunction Day04.part1 Day04.part2
+    05 -> AOCPartsFunction Day05.part1 Day05.part2
+    06 -> AOCPartsFunction Day06.part1 Day06.part2
+    07 -> AOCPartsFunction Day07.part1 Day07.part2
+    08 -> AOCPartsFunction Day08.part1 Day08.part2
+    09 -> AOCPartsFunction Day09.part1 Day09.part2
+    10 -> AOCPartsFunction Day10.part1 Day10.part2
+    11 -> AOCPartsFunction Day11.part1 Day11.part2
+    12 -> AOCPartsFunction Day12.part1 Day12.part2
+    _ -> AOCNoDay
