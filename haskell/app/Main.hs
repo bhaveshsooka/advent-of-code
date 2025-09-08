@@ -14,14 +14,14 @@ main = do
       yearPrompt = "Which year would you like to see?"
       yearErr = "Invalid year. Please enter a valid year between 2015 and " ++ show yearMax ++ "."
   putStrLn "Welcome to Advent of Code!"
-  maybeYear <- whatToPrint yearPrompt yearErr 2015 yearMax
+  maybeYear <- prompt yearPrompt yearErr 2015 yearMax
   maybe (printYears yearMax) handleYear maybeYear
 
 handleYear :: Int -> IO ()
 handleYear year = do
   let dayPrompt = "Which day would you like to see?"
       dayErr = "Invalid day. Please enter a valid day between 1 and 25."
-  maybeDay <- whatToPrint dayPrompt dayErr 1 25
+  maybeDay <- prompt dayPrompt dayErr 1 25
   maybe (printYear year) (handleDay year) maybeDay
 
 handleDay :: Int -> Int -> IO ()
@@ -29,11 +29,11 @@ handleDay year day = do
   let aoCDay = (year, day)
   printDay aoCDay
 
-whatToPrint :: (Read a, Show a, Ord a) => String -> String -> a -> a -> IO (Maybe a)
-whatToPrint prompt errMsg minVal maxVal = do
-  putStrLn $ prompt ++ " (" ++ show minVal ++ "-" ++ show maxVal ++ " or all):"
+prompt :: (Read a, Show a, Ord a) => String -> String -> a -> a -> IO (Maybe a)
+prompt promptMsg errMsg minVal maxVal = do
+  putStrLn $ promptMsg ++ " (" ++ show minVal ++ "-" ++ show maxVal ++ " or all):"
   input <- getLine
   case (input, readMaybe input) of
     ("all", _) -> pure Nothing
     (_, Just x) | x >= minVal && x <= maxVal -> pure (Just x)
-    _ -> putStrLn errMsg >> whatToPrint prompt errMsg minVal maxVal
+    _ -> putStrLn errMsg >> prompt promptMsg errMsg minVal maxVal
