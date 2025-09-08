@@ -9,6 +9,7 @@ import Text.Printf (printf)
 
 formatNominalDiffTime :: NominalDiffTime -> String
 formatNominalDiffTime diff
+  | diff == 0 = "-"
   | diff < ps = roundFixed (realToFrac $ diff / fs) <> "fs"
   | diff < ns = roundFixed (realToFrac $ diff / ps) <> "ps"
   | diff < us = roundFixed (realToFrac $ diff / ns) <> "ns"
