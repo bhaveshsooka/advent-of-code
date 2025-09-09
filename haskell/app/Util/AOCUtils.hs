@@ -27,8 +27,9 @@ import Model
     AOCInputData,
     AOCResultStat,
     AOCResultStatRecord (..),
+    AOCShow (aocShow),
     AOCYearDay,
-    AOCYearDays, AOCShow (aocShow),
+    AOCYearDays,
   )
 import Network.HTTP.Client qualified as HTTP
 import Network.HTTP.Client.TLS (tlsManagerSettings)
@@ -67,12 +68,10 @@ printTable includeAnswers (year, days) = do
   printf "\n"
   where
     printAfterTableRow :: AOCResultStatRecord -> IO ()
-    printAfterTableRow (ResultStatRecord day p1v p1t p2v p2t) = do
-      let dayStr = if day < 10 then "0" <> show day else show day
-      printf "Day: %s\n" dayStr
-      printf "  Part 1 Time: %s\n" $ formatNominalDiffTime p1t
+    printAfterTableRow (ResultStatRecord day p1v _ p2v _) = do
+      printf "Day%02d-P1\n" day
       putStrLn p1v
-      printf "  Part 2 Time: %s\n" $ formatNominalDiffTime p2t
+      printf "Day%02d-P2\n" day
       putStr p2v
 
     printTableHeader :: Clock.NominalDiffTime -> IO ()
@@ -93,12 +92,11 @@ printTable includeAnswers (year, days) = do
 
     printTableRow :: AOCResultStatRecord -> IO ()
     printTableRow (ResultStatRecord day p1v p1t p2v p2t) = do
-      let dayStr = if day < 10 then "0" <> show day else show day
       let t1 = formatNominalDiffTime p1t
       let t2 = formatNominalDiffTime p2t
       if includeAnswers
-        then printf "┃ %3s ┃ %23s ┃ %23s ┃ %23s ┃ %23s ┃\n" dayStr p1v t1 p2v t2
-        else printf "┃ %3s ┃ %23s ┃ %23s ┃\n" dayStr t1 t2
+        then printf "┃ %3s ┃ %23s ┃ %23s ┃ %23s ┃ %23s ┃\n" (printf "%02d" day :: String) p1v t1 p2v t2
+        else printf "┃ %3s ┃ %23s ┃ %23s ┃\n" (printf "%02d" day :: String) t1 t2
 
     printTableFooter :: IO ()
     printTableFooter =
