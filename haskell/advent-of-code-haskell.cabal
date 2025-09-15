@@ -52,7 +52,7 @@ extra-doc-files: CHANGELOG.md
 -- extra-source-files:
 
 common warnings
-  ghc-options: -Wall
+  ghc-options: -Wall -O2 -threaded -rtsopts -with-rtsopts=-N
 
 executable advent-of-code-haskell
   -- Import common warning flags.
@@ -135,12 +135,14 @@ executable advent-of-code-haskell
     , bytestring
     , containers
     , cryptohash-md5
+    , deepseq
     , directory
     , dotenv
     , hashable
     , http-client
     , http-client-tls
     , http-types
+    , parallel
     , parsec
     , scientific
     , text

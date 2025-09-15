@@ -4,58 +4,56 @@ module AOC2024.Day06
   )
 where
 
-import Data.Maybe (fromMaybe)
+import Control.Parallel.Strategies (parListChunk, rseq, withStrategy)
+import Data.Bits (Bits (shiftL, (.|.)))
+import Data.IntSet qualified as IS
 import Data.Text qualified as T
-import Data.Vector qualified as V
-import Util.GridUtils.Coord (Coord (Coord))
-import Util.GridUtils.DirectionVonNeumann (Direction (..), turnRight)
-import Util.GridUtils.Grid (GridInfo, parseGrid)
+import Util.GridUtils.Coord (Coord)
+import Util.GridUtils.DirectionVonNeumann (Direction (..), applyDirection, turnRight)
+import Util.GridUtils.Grid qualified as AOCGrid
 
 part1 :: T.Text -> Int
-part1 input = length . snd $ findVisited gridInfo N start V.empty
+part1 input = length . snd $ findVisited gridInfo (start, N)
   where
-    start = fst $ grid V.! fromMaybe (-1) (V.findIndex ((== '^') . snd) grid)
-    gridInfo@(grid, _, _) = parseGrid id input
+    gridInfo = AOCGrid.parseGrid id input
+    start = AOCGrid.findCoordByVal gridInfo '^'
 
 part2 :: T.Text -> Int
-part2 input = foldr countLoopsFold 0 (V.tail originalPath)
+part2 input = parCountBy 8 (fst . loopIfBlocked) (drop 1 originalPath)
   where
-    countLoopsFold (c, _) acc =
-      if fst (findVisited (changeOneValue c, rows, cols) N start V.empty)
-        then acc + 1
-        else acc
-    originalPath = snd $ findVisited gridInfo N start V.empty
-    start = fst $ grid V.! fromMaybe (-1) (V.findIndex ((== '^') . snd) grid)
-    changeOneValue c@(Coord x y) = grid V.// [(x * rows + y, (c, '#'))]
-    gridInfo@(grid, rows, cols) = parseGrid id input
+    gridInfo@(_, rows, cols) = AOCGrid.parseGrid id input
+    start = AOCGrid.findCoordByVal gridInfo '^'
+    originalPath = snd $ findVisited gridInfo (start, N)
+    loopIfBlocked (c, _) = findVisited (genNewGrid c, rows, cols) (start, N)
+    genNewGrid c = AOCGrid.updateAtCoord gridInfo (c, '#')
+    parCountBy chunk p = sum . withStrategy (parListChunk chunk rseq) . map (fromEnum . p)
 
-type FloorPlanInfo = GridInfo Char
+type FloorPlanInfo = AOCGrid.GridInfo Char
 
-type Visited = V.Vector (Coord, Direction)
+type PathElem = (Coord, Direction)
+
+type Path = [PathElem]
+
+type Visited = IS.IntSet
 
 type IsLoop = Bool
 
-findVisited :: FloorPlanInfo -> Direction -> Coord -> Visited -> (IsLoop, Visited)
-findVisited gridInfo@(grid, rows, cols) dir c visited =
-  if not $ inBounds newCoord
-    then (False, newVisited)
-    else case grid V.!? (nx * rows + ny) of
-      Just (_, '#') -> findVisited gridInfo (turnRight dir) c visited
-      Just _ ->
-        if any ((== c) . fst) visited
-          then
-            if (c, dir) `elem` visited
-              then (True, newVisited)
-              else findVisited gridInfo dir newCoord visited
-          else findVisited gridInfo dir newCoord newVisited
-      Nothing -> (False, newVisited)
+findVisited :: FloorPlanInfo -> PathElem -> (IsLoop, Path)
+findVisited gi = go IS.empty []
   where
-    newCoord@(Coord nx ny) = applyDelta dir c
-    inBounds (Coord x y) = x >= 0 && x < rows && y >= 0 && y < cols
-    newVisited = visited V.++ V.singleton (c, dir)
+    stateKey i d = (i `shiftL` 2) .|. fromEnum d
+    cellSeen s i = any ((`IS.member` s) . stateKey i) [N, E, S, W]
 
-applyDelta :: Direction -> Coord -> Coord
-applyDelta N (Coord x y) = Coord (x - 1) y
-applyDelta S (Coord x y) = Coord (x + 1) y
-applyDelta W (Coord x y) = Coord x (y - 1)
-applyDelta E (Coord x y) = Coord x (y + 1)
+    go :: Visited -> Path -> PathElem -> (IsLoop, Path)
+    go firstOnly v (c, d)
+      | not (AOCGrid.inBounds gi next) = (False, v')
+      | AOCGrid.findValByCoord gi next == '#' = go firstOnly v (c, turnRight d)
+      | cellSeen firstOnly i =
+          if IS.member (stateKey i d) firstOnly
+            then (True, v')
+            else go firstOnly v (next, d)
+      | otherwise = go (IS.insert (stateKey i d) firstOnly) v' (next, d)
+      where
+        next = applyDirection d c
+        i = AOCGrid.findIdxByCoord gi c
+        v' = (c, d) : v
