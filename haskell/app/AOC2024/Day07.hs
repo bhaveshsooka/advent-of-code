@@ -4,52 +4,35 @@ module AOC2024.Day07
   )
 where
 
-import Control.Monad (replicateM)
 import Data.Text qualified as T
 import Text.Parsec qualified as P
 import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
-part1 input = sum $ (\(Equation r _) -> r) <$> filter (evalEquation False) equations
-  where
-    equations = parseEquations input
+part1 input = foldr (addIfValid False) 0 $ parseEquations input
 
 part2 :: T.Text -> Int
-part2 input = sum $ (\(Equation r _) -> r) <$> filter (evalEquation True) equations
-  where
-    equations = parseEquations input
+part2 input = foldr (addIfValid True) 0 $ parseEquations input
 
-data Equation = Equation Int [Int] deriving (Show, Eq, Ord)
+type Equation = (Int, [Int])
 
-evalEquation :: Bool -> Equation -> Bool
-evalEquation isPart2 (Equation result numbers) = result `elem` possibleResults
-  where
-    delims = if isPart2 then ["+", "*", "|"] else ["+", "*"]
-    possibleResults = evaluate <$> intersperseCombinations delims (show <$> numbers)
+addIfValid :: Bool -> Equation -> Int -> Int
+addIfValid isPart2 e@(n, _) acc = if evalEquation isPart2 e 0 then acc + n else acc
 
-evaluate :: [String] -> Int
-evaluate tokens = go tokens 0
+evalEquation :: Bool -> Equation -> Int -> Bool
+evalEquation _ (target, []) n = target == n
+evalEquation isPart2 (target, x : xs) n =
+  if isPart2
+    then eval (n + x) || eval (n * x) || eval (concatInts n x)
+    else eval (n + x) || eval (n * x)
   where
-    go [] acc = acc
-    go [x] acc = acc + read x -- Add the last number
-    go (x : "+" : y : xs) acc = go (show ((read x :: Int) + (read y :: Int)) : xs) acc
-    go (x : "*" : y : xs) acc = go (show ((read x :: Int) * (read y :: Int)) : xs) acc
-    go (x : "|" : y : xs) acc = go ((x ++ y) : xs) acc
-    go _ _ = error "Invalid equation"
-
-intersperseCombinations :: [String] -> [String] -> [[String]]
-intersperseCombinations delimiters input = map (merge input) combinations
-  where
-    n = length input - 1
-    combinations = replicateM n delimiters
-    merge [] _ = []
-    merge (x : _) [] = [x]
-    merge (x : xs) (d : ds) = x : d : merge xs ds
+    concatInts a b = a * 10 ^ length (show (abs b)) + b
+    eval = evalEquation isPart2 (target, xs)
 
 parseEquations :: T.Text -> [Equation]
 parseEquations input = parseAoCInput input equationsParser "equationsParser"
   where
     numParser = read <$> P.many1 P.digit
     argumentParser = P.sepBy1 numParser (P.char ' ')
-    equationParser = Equation <$> numParser <* P.string ": " <*> argumentParser
+    equationParser = (,) <$> numParser <* P.string ": " <*> argumentParser
     equationsParser = P.many1 $ equationParser <* P.optional P.newline
