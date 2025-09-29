@@ -4,19 +4,23 @@ module AOC2015.Day03
   )
 where
 
-import Data.List (nub, partition)
+import Data.Set qualified as S
 import Data.Text qualified as T
 import Util.GridUtils.Coord (Coord (Coord))
 
 part1 :: T.Text -> Int
-part1 input = length . nub . scanl (<>) mempty $ getCoord <$> T.unpack input
+part1 input = length . snd $ T.foldl go (mempty, S.singleton mempty) input
+  where
+    go (acc, v) c = (acc <> getCoord c, S.insert (acc <> getCoord c) v)
 
 part2 :: T.Text -> Int
-part2 input = length . nub $ santa <> roboSanta
+part2 input = length . third $ T.foldl go (0 :: Int, (mempty, mempty), S.singleton mempty) input
   where
-    (evenDirections, oddDirections) = partition (even . fst) $ zip [0 :: Int ..] $ getCoord <$> T.unpack input
-    santa = scanl (<>) mempty $ snd <$> evenDirections
-    roboSanta = scanl (<>) mempty $ snd <$> oddDirections
+    third (_, _, x) = x
+    go (i, (acc1, acc2), v) c =
+      if even i
+        then (i + 1, (acc1 <> getCoord c, acc2), S.insert (acc1 <> getCoord c) v)
+        else (i + 1, (acc1, acc2 <> getCoord c), S.insert (acc2 <> getCoord c) v)
 
 getCoord :: Char -> Coord
 getCoord c = case c of

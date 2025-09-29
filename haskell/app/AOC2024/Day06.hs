@@ -19,7 +19,7 @@ part1 input = length . snd $ findVisited gridInfo (start, N)
     start = AOCGrid.findCoordByVal gridInfo '^'
 
 part2 :: T.Text -> Int
-part2 input = parCountBy 8 (fst . loopIfBlocked) (drop 1 originalPath)
+part2 input = parCountBy 128 (fst . loopIfBlocked) (drop 1 originalPath)
   where
     gridInfo@(_, rows, cols) = AOCGrid.parseGrid id input
     start = AOCGrid.findCoordByVal gridInfo '^'
