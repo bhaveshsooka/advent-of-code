@@ -65,10 +65,10 @@ data AOCDaySolution
 
 data AOCResultStatRecord = ResultStatRecord
   { day :: Day,
-    part1SolutionValue :: PartSolutionValue,
-    part1SolutionTime :: PartSolutionTime,
-    part2SolutionValue :: PartSolutionValue,
-    part2SolutionTime :: PartSolutionTime
+    p1SolValue :: PartSolutionValue,
+    p1SolTime :: PartSolutionTime,
+    p2SolValue :: PartSolutionValue,
+    p2SolTime :: PartSolutionTime
   }
   deriving (Show)
 

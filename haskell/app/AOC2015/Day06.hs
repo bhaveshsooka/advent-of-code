@@ -4,14 +4,14 @@ module AOC2015.Day06
   )
 where
 
+import Control.Monad (forM_)
 import Data.Text qualified as T
+import Data.Vector.Unboxed qualified as V
 import Data.Vector.Unboxed.Mutable qualified as MV
+import GHC.IO (unsafePerformIO)
 import Text.Parsec qualified as P
 import Util.GridUtils.Coord (Block, Coord (..))
 import Util.ParseUtils (parseAoCInput)
-import Control.Monad (forM_)
-import GHC.IO (unsafePerformIO)
-import qualified Data.Vector.Unboxed as V
 
 part1 :: T.Text -> Int
 part1 input = unsafePerformIO $ do

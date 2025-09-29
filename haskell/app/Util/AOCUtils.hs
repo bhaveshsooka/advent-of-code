@@ -11,16 +11,10 @@ import AOC2018.Module qualified as AOC2018
 import AOC2022.Module qualified as AOC2022
 import AOC2023.Module qualified as AOC2023
 import AOC2024.Module qualified as AOC2024
-import Control.Monad (forM_, unless)
-import Data.ByteString qualified as B
-import Data.ByteString.Char8 qualified as C8
-import Data.ByteString.Lazy.Char8 qualified as LC8
-import Data.IORef (modifyIORef')
-import Data.Text qualified as T
-import Data.Text.Encoding qualified as TE
+import Control.Monad (forM_)
+import Data.IORef (modifyIORef', newIORef, readIORef)
 import Data.Time.Clock qualified as Clock
 import GHC.IO (evaluate)
-import GHC.IORef (newIORef, readIORef)
 import Model
   ( AOCDayImpl (..),
     AOCDaySolution (..),
@@ -31,13 +25,8 @@ import Model
     AOCYearDay,
     AOCYearDays,
   )
-import Network.HTTP.Client qualified as HTTP
-import Network.HTTP.Client.TLS (tlsManagerSettings)
-import Network.HTTP.Types.Header (hCookie)
-import Network.HTTP.Types.Status (statusCode)
-import System.Directory qualified as Dir
-import System.Environment (getEnv)
 import Text.Printf (printf)
+import Util.AOCHttpUtils (fetchData)
 import Util.TimeUtils (formatNominalDiffTime)
 
 printYears :: Int -> IO ()
@@ -57,7 +46,10 @@ printTable includeAnswers (year, days) = do
           ( \stat@(ResultStatRecord _ p1v _ p2v _) (rows, after) ->
               if length p1v <= 23 && length p2v <= 23
                 then (stat : rows, after)
-                else (rows, stat : after)
+                else
+                  ( stat {p1SolValue = "Printed below", p2SolValue = "Printed below"} : rows,
+                    stat : after
+                  )
           )
           ([], [])
           stats
@@ -162,34 +154,3 @@ getParts (year, day) =
     2023 -> AOC2023.getParts day
     2024 -> AOC2024.getParts day
     _ -> AOCNoYear
-
-fetchData :: AOCYearDay -> IO AOCInputData
-fetchData (year, day) = do
-  let dataDir = "data/"
-      yearDir = dataDir <> show year <> "/"
-      paddedDay = if day < 10 then "0" <> show day else show day
-      local_file = paddedDay <> ".txt"
-  _ <- do
-    exists <- Dir.doesDirectoryExist dataDir
-    unless exists $ Dir.createDirectory dataDir
-  _ <- do
-    exists <- Dir.doesDirectoryExist yearDir
-    unless exists $ Dir.createDirectory yearDir
-  _ <- do
-    exists <- Dir.doesFileExist (yearDir <> local_file)
-    unless exists $ downloadFile (year, day) (yearDir <> local_file)
-  byteStrData <- B.readFile (yearDir <> local_file)
-  pure $ (T.strip . TE.decodeUtf8) byteStrData
-
-downloadFile :: AOCYearDay -> String -> IO ()
-downloadFile (year, day) filename = do
-  let url = "https://adventofcode.com/" <> show year <> "/day/" <> show day <> "/input"
-  cookie <- getEnv "COOKIE"
-  req <- HTTP.parseRequest url
-  let req0 = req {HTTP.requestHeaders = [(hCookie, C8.pack cookie)]}
-  manager <- HTTP.newManager tlsManagerSettings
-  resp <- HTTP.httpLbs req0 manager
-  let body :: String = LC8.unpack $ HTTP.responseBody resp
-  case statusCode (HTTP.responseStatus resp) of
-    200 -> writeFile filename body
-    _ -> error $ "Failed to download input for year " ++ show year ++ " day " ++ show day ++ ": " ++ body

@@ -4,8 +4,8 @@ module AOC2015.Day10
   )
 where
 
-import Data.Text qualified as T
 import Data.List (group)
+import Data.Text qualified as T
 
 part1 :: T.Text -> Int
 part1 input = length $ repeatDescribe 40 $ T.unpack input
