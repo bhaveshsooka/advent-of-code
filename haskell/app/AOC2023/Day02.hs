@@ -9,7 +9,7 @@ import Text.Parsec qualified as P
 import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
-part1 input = foldr (\(Game n _) acc -> acc + n) 0 possibleGames
+part1 input = foldr (\(Game n rounds) acc -> if all isRoundPossible rounds then acc + n else acc) 0 games
   where
     games = parseGames input
 
@@ -18,8 +18,6 @@ part1 input = foldr (\(Game n _) acc -> acc + n) 0 possibleGames
       Red n -> n <= 12 && isRoundPossible rest
       Green n -> n <= 13 && isRoundPossible rest
       Blue n -> n <= 14 && isRoundPossible rest
-
-    possibleGames = filter (\(Game _ rounds) -> all isRoundPossible rounds) games
 
 part2 :: T.Text -> Int
 part2 input = foldr ((\(r, g, b) acc -> acc + (r * g * b)) . minForGame) 0 games
@@ -50,11 +48,10 @@ parseGames :: T.Text -> [Game]
 parseGames input = parseAoCInput input gamesParser "gamesParser"
   where
     numParser = read <$> P.many1 P.digit
-    cParser c = case c of
-      Red _ -> P.try (Red <$> numParser <* P.string " red")
-      Green _ -> P.try (Green <$> numParser <* P.string " green")
-      Blue _ -> P.try (Blue <$> numParser <* P.string " blue")
-    colourParser = P.choice [cParser (Red 0), cParser (Blue 0), cParser (Green 0)]
+    redParser = Red <$> (numParser <* P.string " red")
+    greenParser = Green <$> (numParser <* P.string " green")
+    blueParser = Blue <$> (numParser <* P.string " blue")
+    colourParser = P.choice $ P.try <$> [redParser, greenParser, blueParser]
     roundParser = P.sepBy1 colourParser (P.string ", ")
     roundsParser = P.sepBy1 roundParser (P.string "; ")
     gameIdParser = P.string "Game " *> numParser <* P.string ": "

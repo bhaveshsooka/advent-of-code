@@ -9,23 +9,22 @@ where
 import Control.Concurrent (getNumCapabilities)
 import Control.Concurrent.Async (async, waitAnyCancel)
 import Crypto.Hash.MD5 qualified as MD5
-import Data.ByteString (ByteString)
 import Data.ByteString qualified as BS
-import Data.Text (Text)
+import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import System.IO.Unsafe (unsafePerformIO)
 
-part1 :: Text -> Int
+part1 :: T.Text -> Int
 part1 input = unsafePerformIO $ parallelFind (encodeUtf8 input) isPrefix 0
   where
     isPrefix d = BS.index d 0 == 0 && BS.index d 1 == 0 && BS.index d 2 <= 0x0F
 
-part2 :: Text -> Int
+part2 :: T.Text -> Int
 part2 input = unsafePerformIO $ parallelFind (encodeUtf8 input) isPrefix (part1 input)
   where
     isPrefix d = BS.index d 0 == 0 && BS.index d 1 == 0 && BS.index d 2 == 0
 
-parallelFind :: ByteString -> (ByteString -> Bool) -> Int -> IO Int
+parallelFind :: BS.ByteString -> (BS.ByteString -> Bool) -> Int -> IO Int
 parallelFind inp isPrefix start = do
   nCaps <- getNumCapabilities
   let !workers = max 1 nCaps

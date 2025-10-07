@@ -4,41 +4,29 @@ module AOC2023.Day04
   )
 where
 
-import Data.HashMap.Strict qualified as M
 import Data.List (intersect)
 import Data.Text qualified as T
 import Text.Parsec qualified as P
 import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
-part1 input = sum $ getPoints <$> scratchCards
+part1 input = sum $ countPoints <$> scratchCards
   where
-    getPoints (ScratchCard _ wns ns) = case wns `intersect` ns of
-      [] -> 0
-      xs -> 2 ^ (length xs - 1)
+    countPoints c = if countWins c == 0 then 0 else 2 ^ (countWins c - 1)
     scratchCards = parseScratchCards input
 
 part2 :: T.Text -> Int
-part2 input = sum cardCounts
+part2 input = sum $ foldr (countCards . countWins) [] scratchCards
   where
-    cardCounts = foldl totalScratchCardsFold initalScratchCardsCount scratchCards
-    initalScratchCardsCount = M.fromList $ (\(ScratchCard cardId _ _) -> (cardId, 1)) <$> scratchCards
+    countCards w xs = 1 + sum (take w xs) : xs
     scratchCards = parseScratchCards input
 
 data ScratchCard = ScratchCard Int [Int] [Int] deriving (Show)
 
 type ScratchCards = [ScratchCard]
 
-type ScratchCardsCount = M.HashMap Int Int
-
-totalScratchCardsFold :: ScratchCardsCount -> ScratchCard -> ScratchCardsCount
-totalScratchCardsFold scCounts (ScratchCard cardId wns ns) =
-  case scCounts M.!? cardId of
-    Nothing -> scCounts
-    Just cardCount -> foldr countWinningNumbersFold scCounts [0 .. cardCount - 1]
-  where
-    countWinningNumbersFold _ acc = foldr updateScratchCardsCountFold acc [1 .. length $ wns `intersect` ns]
-    updateScratchCardsCountFold j = M.insertWith (+) (cardId + j) 1
+countWins :: ScratchCard -> Int
+countWins (ScratchCard _ wns ns) = length $ wns `intersect` ns
 
 parseScratchCards :: T.Text -> ScratchCards
 parseScratchCards input = parseAoCInput input scratchCardsParser "scratchCardsParser"
