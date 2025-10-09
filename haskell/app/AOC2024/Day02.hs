@@ -7,28 +7,24 @@ where
 import Data.Text qualified as T
 
 part1 :: T.Text -> Int
-part1 input = length $ filter isArrOrReversedSafe $ parseReports input
-  where
-    isArrOrReversedSafe arr = isReportSafe arr || isReportSafe (reverse arr)
+part1 input = length . filter isReportSafe $ parseReports input
 
 part2 :: T.Text -> Int
 part2 input = length . filter isAnyReportVarientSafe $ parseReports input
   where
-    isAnyReportVarientSafe arr = any isArrOrReversedSafe (allReportVarients arr)
-    isArrOrReversedSafe arr = isReportSafe arr || isReportSafe (reverse arr)
-    allReportVarients arr = foldr (varientsFold arr) [] [0 .. length arr - 1]
-    varientsFold arr i acc = snd (foldr (deleteIFold i) (0, []) arr) : acc
-    deleteIFold i e (idx, acc) = if i == idx then (idx + 1, acc) else (idx + 1, acc ++ [e])
+    isAnyReportVarientSafe xs = any isReportSafe [take i xs ++ drop (i + 1) xs | i <- [0 .. length xs - 1]]
 
 isReportSafe :: [Int] -> Bool
-isReportSafe arr = foldr (\(x, y) acc -> acc && isValidPair (x, y)) True $ pairs arr
+isReportSafe arr = isMonotonic arr && adjLvlDiff arr
   where
-    pairs [] = []
-    pairs [_] = []
-    pairs (x : y : xs) = (x, y) : pairs (y : xs)
-    isValidPair (x, y) = x <= y && (abs (x - y) <= 3) && x /= y
+    isMonotonic (x : y : xs) = all ((== compare x y) . uncurry compare) (zip (y : xs) xs)
+    isMonotonic [_] = True
+    isMonotonic [] = True
+
+    adjLvlDiff xs@(_ : rest) = all withinRange (zip xs rest)
+    adjLvlDiff [] = True
+
+    withinRange (a, b) = let d = abs (a - b) in d >= 1 && d <= 3
 
 parseReports :: T.Text -> [[Int]]
-parseReports input = reportList <$> T.lines input
-  where
-    reportList reportLine = read . T.unpack <$> T.splitOn (T.pack " ") reportLine
+parseReports input = [read . T.unpack <$> T.splitOn (T.pack " ") reportStr | reportStr <- T.lines input]
