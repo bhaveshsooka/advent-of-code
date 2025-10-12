@@ -84,6 +84,7 @@ executable advent-of-code-haskell
     AOC2015.Day17
     AOC2015.Day18
     AOC2015.Day19
+    AOC2015.Day20
     AOC2015.Module
     AOC2016.Day01
     AOC2016.Day02

@@ -22,6 +22,7 @@ import AOC2015.Day16 qualified as Day16
 import AOC2015.Day17 qualified as Day17
 import AOC2015.Day18 qualified as Day18
 import AOC2015.Day19 qualified as Day19
+import AOC2015.Day20 qualified as Day20
 import Model (AOCDayImpl (AOCNoDay, AOCPartsFunction))
 
 getParts :: Int -> AOCDayImpl
@@ -46,4 +47,5 @@ getParts day =
     17 -> AOCPartsFunction Day17.part1 Day17.part2
     18 -> AOCPartsFunction Day18.part1 Day18.part2
     19 -> AOCPartsFunction Day19.part1 Day19.part2
+    20 -> AOCPartsFunction Day20.part1 Day20.part2
     _ -> AOCNoDay

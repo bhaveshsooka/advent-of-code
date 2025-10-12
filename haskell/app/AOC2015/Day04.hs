@@ -1,5 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
-
 module AOC2015.Day04
   ( part1,
     part2,

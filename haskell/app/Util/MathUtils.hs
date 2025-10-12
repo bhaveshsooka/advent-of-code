@@ -1,4 +1,9 @@
 module Util.MathUtils where
 
+import Data.List (nub)
+
+isqrt :: (Integral a) => a -> a
+isqrt = floor . sqrt . fromIntegral
+
 factors :: (Integral a) => a -> [a]
-factors n = [x | x <- [1 .. n], n `mod` x == 0]
+factors n = nub . concat $ [[x, q] | x <- [1 .. isqrt n], let (q, r) = divMod n x, r == 0]
