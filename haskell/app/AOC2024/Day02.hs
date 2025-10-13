@@ -27,4 +27,4 @@ isReportSafe arr = isMonotonic arr && adjLvlDiff arr
     withinRange (a, b) = let d = abs (a - b) in d >= 1 && d <= 3
 
 parseReports :: T.Text -> [[Int]]
-parseReports input = [read . T.unpack <$> T.splitOn (T.pack " ") reportStr | reportStr <- T.lines input]
+parseReports input = [[read $ T.unpack x | x <- T.split (== ' ') reportStr] | reportStr <- T.lines input]
