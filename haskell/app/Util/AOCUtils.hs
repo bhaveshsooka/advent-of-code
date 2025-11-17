@@ -33,18 +33,18 @@ printYears :: Int -> IO ()
 printYears currentYear = mapM_ printYear [2015 .. currentYear]
 
 printYear :: Int -> IO ()
-printYear year = printTable True (year, [1 .. 25])
+printYear year = printTable (year, [1 .. 25])
 
 printDay :: AOCYearDay -> IO ()
-printDay (year, day) = printTable True (year, [day])
+printDay (year, day) = printTable (year, [day])
 
-printTable :: Bool -> AOCYearDays -> IO ()
-printTable includeAnswers (year, days) = do
+printTable :: AOCYearDays -> IO ()
+printTable (year, days) = do
   (totalTime, stats) <- runAndGetStats (year, days)
   let (tableRows, afterTableRows) =
         foldr
           ( \stat@(ResultStatRecord _ p1v _ p2v _) (rows, after) ->
-              if length p1v <= 23 && length p2v <= 23
+              if length p1v <= 28 && length p2v <= 28
                 then (stat : rows, after)
                 else
                   ( stat {p1SolValue = "Printed below", p2SolValue = "Printed below"} : rows,
@@ -65,38 +65,21 @@ printTable includeAnswers (year, days) = do
       putStrLn p1v
       printf "Day%02d-P2\n" day
       putStr p2v
-
     printTableHeader :: Clock.NominalDiffTime -> IO ()
-    printTableHeader totalTime =
-      if includeAnswers
-        then do
-          printf "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n"
-          printf "┃ Advent of Code                                                                %4d - Total time: %10s ┃\n" year (formatNominalDiffTime totalTime)
-          printf "┣━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┫\n"
-          printf "┃ Day ┃           Part 1 Answer ┃             Part 1 Time ┃           Part 2 Answer ┃             Part 2 Time ┃\n"
-          printf "┣━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━┫\n"
-        else do
-          printf "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n"
-          printf "┃ Advent of Code            %4d - Total time: %10s ┃\n" year (formatNominalDiffTime totalTime)
-          printf "┣━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┫\n"
-          printf "┃ Day ┃             Part 1 Time ┃             Part 2 Time ┃\n"
-          printf "┣━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━┫\n"
-
+    printTableHeader totalTime = do
+      printf "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n"
+      printf "┃ Advent of Code                                                  %4d - Total time: %10s ┃\n" year (formatNominalDiffTime totalTime)
+      printf "┣━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┫\n"
+      printf "┃ Day ┃                Part 1 Answer ┃ Part 1 Time ┃                Part 2 Answer ┃ Part 2 Time ┃\n"
+      printf "┣━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━┫\n"
     printTableRow :: AOCResultStatRecord -> IO ()
     printTableRow (ResultStatRecord day p1v p1t p2v p2t) = do
       let t1 = formatNominalDiffTime p1t
       let t2 = formatNominalDiffTime p2t
-      if includeAnswers
-        then printf "┃ %3s ┃ %23s ┃ %23s ┃ %23s ┃ %23s ┃\n" (printf "%02d" day :: String) p1v t1 p2v t2
-        else printf "┃ %3s ┃ %23s ┃ %23s ┃\n" (printf "%02d" day :: String) t1 t2
-
+      printf "┃ %3s ┃ %28s ┃ %11s ┃ %28s ┃ %11s ┃\n" (printf "%02d" day :: String) p1v t1 p2v t2
     printTableFooter :: IO ()
     printTableFooter =
-      if includeAnswers
-        then do
-          printf "┗━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┛\n"
-        else do
-          printf "┗━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┛\n"
+      printf "┗━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┛\n"
 
 runAndGetStats :: AOCYearDays -> IO AOCResultStat
 runAndGetStats (year, days) = do
