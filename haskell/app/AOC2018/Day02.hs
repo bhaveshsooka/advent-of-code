@@ -16,19 +16,16 @@ part1 input = length exactly2s * length exactly3s
     strings = lines $ T.unpack input
 
 part2 :: T.Text -> String
-part2 input =
-  case almostTwins of
-    [] -> "error"
-    (x : _) -> x
+part2 input = findAlmostTwins zippedStrPairs
   where
-    almostTwins = uncurry intersect <$> filter (\(a, b) -> countDifferingChars a b (0 :: Int) == 1) strPairs
-    strPairs = [(x, y) | (i1, x) <- strings, (i2, y) <- strings, i1 < i2]
-    strings = zip [1 :: Int ..] (lines $ T.unpack input)
+    zippedStrPairs = [zip x y | (i1, x) <- indexedStrings, (i2, y) <- indexedStrings, i1 < i2]
+    indexedStrings = zip [1 :: Int ..] (lines $ T.unpack input)
 
-countDifferingChars :: (Eq a, Num t) => [a] -> [a] -> t -> t
-countDifferingChars [] _ acc = acc
-countDifferingChars _ [] acc = acc
-countDifferingChars (x : xs) (y : ys) acc =
-  if x == y
-    then countDifferingChars xs ys acc
-    else countDifferingChars xs ys (acc + 1)
+findAlmostTwins :: [[(Char, Char)]] -> String
+findAlmostTwins [] = "error"
+findAlmostTwins (x : xs) =
+  if countDifferingChars x == 1
+    then uncurry intersect . unzip $ x
+    else findAlmostTwins xs
+  where
+    countDifferingChars = foldr (\(a, b) acc -> if a == b then acc else acc + 1) (0 :: Int)
