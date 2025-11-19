@@ -4,7 +4,6 @@ module AOC2018.Day03
   )
 where
 
-import Data.HashSet qualified as H
 import Data.Map qualified as M
 import Data.Text qualified as T
 import Text.Parsec qualified as P
@@ -12,21 +11,17 @@ import Util.GridUtils.Coord (Coord (Coord))
 import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
-part1 input = H.size $ H.unions overlaps
+part1 input = M.size $ M.filter (> 1) coordCounts
   where
-    overlaps = (\((_, v1), (_, v2)) -> v1 `H.intersection` v2) <$> blockPairs
-    blockPairs = [(a, b) | (i1, a) <- blocks, (i2, b) <- blocks, i1 < i2]
-    blocks :: [(Int, (ID, H.HashSet Coord))] = zip [1 ..] $ generateBlock <$> fabricRectangles
+    coordCounts = countPerCoord blocks M.empty
+    blocks :: [(ID, [Coord])] = generateBlock <$> fabricRectangles
     fabricRectangles = parseFabricRectangles input
 
-part2 :: T.Text -> M.Map ID Int
-part2 input = M.filter (\v -> v == length fabricRectangles - 1) idCounts
+part2 :: T.Text -> M.Map ID Bool
+part2 input = M.filter not $ isOverlapPerId blocks overlaps M.empty
   where
-    idCounts = countIds emptyOverlaps M.empty
-    emptyOverlaps = filter (\(_, _, e) -> H.size e == 0) overlaps
-    overlaps = (\((id1, v1), (id2, v2)) -> (id1, id2, v1 `H.intersection` v2)) <$> blockPairs
-    blockPairs = [(a, b) | (i1, a) <- blocks, (i2, b) <- blocks, i1 < i2]
-    blocks :: [(Int, (ID, H.HashSet Coord))] = zip [1 ..] $ generateBlock <$> fabricRectangles
+    overlaps = M.filter (> 1) $ countPerCoord blocks M.empty
+    blocks :: [(ID, [Coord])] = generateBlock <$> fabricRectangles
     fabricRectangles = parseFabricRectangles input
 
 type RectangleSize = (Int, Int)
@@ -35,21 +30,26 @@ type ID = Int
 
 data FabricRectangle = FabricRectangle ID Coord RectangleSize deriving (Show)
 
-countIds :: [(ID, ID, H.HashSet Coord)] -> M.Map ID Int -> M.Map ID Int
-countIds [] acc = acc
-countIds ((id1, id2, _) : xs) acc = countIds xs m2
+countPerCoord :: [(ID, [Coord])] -> M.Map Coord Int -> M.Map Coord Int
+countPerCoord [] coordMemo = coordMemo
+countPerCoord ((_, blk) : xs) coordMemo = countPerCoord xs newAcc
   where
-    m1 = M.insertWith (+) id1 1 acc
-    m2 = M.insertWith (+) id2 1 m1
+    newAcc = foldr (\c acc -> M.insertWith (+) c 1 acc) coordMemo blk
 
-generateBlock :: FabricRectangle -> (ID, H.HashSet Coord)
-generateBlock (FabricRectangle i (Coord startX startY) (rows, cols)) =
-  ( i,
-    H.fromList
-      [ Coord x y
-        | x <- (+ startX) <$> [0 .. rows - 1],
-          y <- (+ startY) <$> [0 .. cols - 1]
-      ]
+isOverlapPerId :: [(ID, [Coord])] -> M.Map Coord Int -> M.Map ID Bool -> M.Map ID Bool
+isOverlapPerId [] _ acc = acc
+isOverlapPerId ((cid, blk) : xs) overlaps idMemo =
+  if any (`M.member` overlaps) blk
+    then isOverlapPerId xs overlaps (M.insertWith (||) cid True idMemo)
+    else isOverlapPerId xs overlaps (M.insertWith (||) cid False idMemo)
+
+generateBlock :: FabricRectangle -> (ID, [Coord])
+generateBlock (FabricRectangle cid (Coord startX startY) (rows, cols)) =
+  ( cid,
+    [ Coord x y
+      | x <- (+ startX) <$> [0 .. rows - 1],
+        y <- (+ startY) <$> [0 .. cols - 1]
+    ]
   )
 
 parseFabricRectangles :: T.Text -> [FabricRectangle]
