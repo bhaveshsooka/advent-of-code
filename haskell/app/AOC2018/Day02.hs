@@ -10,9 +10,9 @@ import Data.Text qualified as T
 part1 :: T.Text -> Int
 part1 input = length exactly2s * length exactly3s
   where
-    exactly2s = filter (not . null) $ filter (== 2) <$> groupLengths
-    exactly3s = filter (not . null) $ filter (== 3) <$> groupLengths
-    groupLengths = (length <$>) . group . sort <$> strings
+    exactly2s = filter (hasExactly 2) strings
+    exactly3s = filter (hasExactly 3) strings
+    hasExactly n s = any ((== n) . length) (group . sort $ s)
     strings = lines $ T.unpack input
 
 part2 :: T.Text -> String
