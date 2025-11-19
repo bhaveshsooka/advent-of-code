@@ -14,21 +14,21 @@ part1 :: T.Text -> Int
 part1 input = M.size $ M.filter (> 1) coordCounts
   where
     coordCounts = countPerCoord blocks M.empty
-    blocks :: [(ID, [Coord])] = generateBlock <$> fabricRectangles
-    fabricRectangles = parseFabricRectangles input
+    blocks :: [(ID, [Coord])] = generateBlock <$> fabricClaims
+    fabricClaims = parseFabricClaim input
 
 part2 :: T.Text -> M.Map ID Bool
 part2 input = M.filter not $ isOverlapPerId blocks overlaps M.empty
   where
     overlaps = M.filter (> 1) $ countPerCoord blocks M.empty
-    blocks :: [(ID, [Coord])] = generateBlock <$> fabricRectangles
-    fabricRectangles = parseFabricRectangles input
+    blocks :: [(ID, [Coord])] = generateBlock <$> fabricClaims
+    fabricClaims = parseFabricClaim input
 
-type RectangleSize = (Int, Int)
+type BlockDimensions = (Int, Int)
 
 type ID = Int
 
-data FabricRectangle = FabricRectangle ID Coord RectangleSize deriving (Show)
+data Claim = Claim ID Coord BlockDimensions deriving (Show)
 
 countPerCoord :: [(ID, [Coord])] -> M.Map Coord Int -> M.Map Coord Int
 countPerCoord [] coordMemo = coordMemo
@@ -43,8 +43,8 @@ isOverlapPerId ((cid, blk) : xs) overlaps idMemo =
     then isOverlapPerId xs overlaps (M.insertWith (||) cid True idMemo)
     else isOverlapPerId xs overlaps (M.insertWith (||) cid False idMemo)
 
-generateBlock :: FabricRectangle -> (ID, [Coord])
-generateBlock (FabricRectangle cid (Coord startX startY) (rows, cols)) =
+generateBlock :: Claim -> (ID, [Coord])
+generateBlock (Claim cid (Coord startX startY) (rows, cols)) =
   ( cid,
     [ Coord x y
       | x <- (+ startX) <$> [0 .. rows - 1],
@@ -52,12 +52,12 @@ generateBlock (FabricRectangle cid (Coord startX startY) (rows, cols)) =
     ]
   )
 
-parseFabricRectangles :: T.Text -> [FabricRectangle]
-parseFabricRectangles input = parseAoCInput input fabricRectanglesParser "fabricRectanglesParser"
+parseFabricClaim :: T.Text -> [Claim]
+parseFabricClaim input = parseAoCInput input fabricRectanglesParser "fabricRectanglesParser"
   where
     numParser = read <$> P.many1 P.digit
     idParser = P.char '#' *> numParser <* P.string " @ "
     coordParser = Coord <$> (numParser <* P.char ',') <*> (numParser <* P.string ": ")
     rectangleSizeParser = (,) <$> (numParser <* P.char 'x') <*> numParser
-    fabricRectangleParser = FabricRectangle <$> idParser <*> coordParser <*> rectangleSizeParser
+    fabricRectangleParser = Claim <$> idParser <*> coordParser <*> rectangleSizeParser
     fabricRectanglesParser = P.many1 $ fabricRectangleParser <* P.optional P.newline
