@@ -10,7 +10,7 @@ import Text.Parsec qualified as P
 import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
-part1 input = snd $ count0s (parseRotations input) (0, 50)
+part1 input = fst $ count0s (parseRotations input) (0, 50)
 
 -- part2 :: T.Text -> Int
 part2 input = countClicks (parseRotations input) (0, 50)
@@ -19,13 +19,21 @@ data Rotation = L Int | R Int deriving (Show)
 
 countClicks :: [Rotation] -> (Int, Int) -> (Int, Int)
 countClicks [] acc = acc
-countClicks (x : xs) (count, currentVal) =
-  trace (show (newVal, newVal `mod` 100, newVal `div` 100) ) $
-  if (newVal `div` 100) /= 0
-    then countClicks xs (count + abs (newVal `div` 100), newVal `mod` 100)
-    else countClicks xs (count, newVal `mod` 100)
-  where
-    newVal = case x of L rv -> currentVal - rv; R rv -> currentVal + rv
+countClicks (x : xs) (hits, dial) =
+  case x of
+    R rv ->
+      case dial + rv == 100  
+      if 
+        then countClicks xs (hits + 1, 0)
+        else 
+    L rv -> undefined
+  -- case (currentVal == 0, newVal == 0) of
+  --   (False, False) -> countClicks xs (count + abs (newVal `div` 100), newVal `mod` 100)
+  --   (False, True) -> countClicks xs (count + 1 + (rVal `div` 100), newVal `mod` 100)
+  --   (True, _) -> countClicks xs (count + (rVal `div` 100), newVal `mod` 100)
+  -- where
+  --   rVal = case x of L rv -> rv; R rv -> rv
+  --   newVal = case x of L rv -> currentVal - rv; R rv -> currentVal + rv
 
 count0s :: [Rotation] -> (Int, Int) -> (Int, Int)
 count0s [] acc = acc
@@ -34,7 +42,7 @@ count0s (x : xs) (count, currentVal) =
     then count0s xs (count + 1, newVal)
     else count0s xs (count, newVal)
   where
-    newVal = case x of L rv -> (currentVal - rv) `mod` 100; R rv -> (currentVal + rv) `mod` 100
+    newVal = (case x of L rv -> currentVal - rv; R rv -> currentVal + rv) `mod` 100
 
 parseRotations :: T.Text -> [Rotation]
 parseRotations input = parseAoCInput input rotationsParser "parseRotations"
