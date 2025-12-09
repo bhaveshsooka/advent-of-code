@@ -138,6 +138,7 @@ executable advent-of-code-haskell
     AOC2025.Day04
     AOC2025.Day05
     AOC2025.Day06
+    AOC2025.Day07
     AOC2025.Module
     Model
     Util.AOCHttpUtils
