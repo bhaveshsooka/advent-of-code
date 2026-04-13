@@ -69,19 +69,36 @@ printTable (year, days) = do
       putStr p2v
     printTableHeader :: Clock.NominalDiffTime -> IO ()
     printTableHeader totalTime = do
+      let totalTimeText = padLeftVisible 10 (formatNominalDiffTime totalTime)
       printf "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n"
-      printf "┃ Advent of Code                                                  %4d - Total time: %10s ┃\n" year (formatNominalDiffTime totalTime)
+      printf "┃ Advent of Code                                                  %4d - Total time: %s ┃\n" year totalTimeText
       printf "┣━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┫\n"
       printf "┃ Day ┃                Part 1 Answer ┃ Part 1 Time ┃                Part 2 Answer ┃ Part 2 Time ┃\n"
       printf "┣━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━┫\n"
     printTableRow :: AOCResultStatRecord -> IO ()
     printTableRow (ResultStatRecord day p1v p1t p2v p2t) = do
-      let t1 = formatNominalDiffTime p1t
-      let t2 = formatNominalDiffTime p2t
-      printf "┃ %3s ┃ %28s ┃ %11s ┃ %28s ┃ %11s ┃\n" (printf "%02d" day :: String) p1v t1 p2v t2
+      let t1 = padLeftVisible 11 (formatNominalDiffTime p1t)
+      let t2 = padLeftVisible 11 (formatNominalDiffTime p2t)
+      printf "┃ %3s ┃ %28s ┃ %s ┃ %28s ┃ %s ┃\n" (printf "%02d" day :: String) p1v t1 p2v t2
     printTableFooter :: IO ()
     printTableFooter =
       printf "┗━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┛\n"
+
+    padLeftVisible :: Int -> String -> String
+    padLeftVisible width txt = replicate (max 0 (width - visibleLength txt)) ' ' <> txt
+
+    visibleLength :: String -> Int
+    visibleLength = length . stripAnsi
+
+    stripAnsi :: String -> String
+    stripAnsi [] = []
+    stripAnsi ('\ESC' : '[' : xs) = stripAnsi (dropAnsiSuffix xs)
+    stripAnsi (x : xs) = x : stripAnsi xs
+
+    dropAnsiSuffix :: String -> String
+    dropAnsiSuffix [] = []
+    dropAnsiSuffix ('m' : xs) = xs
+    dropAnsiSuffix (_ : xs) = dropAnsiSuffix xs
 
 runAndGetStats :: AOCYearDays -> IO AOCResultStat
 runAndGetStats (year, days) = do
