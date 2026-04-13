@@ -16,6 +16,7 @@ dependencies = [
  "rayon",
  "reqwest",
  "ring",
+ "rustls-webpki",
  "strum",
  "strum_macros",
  "tokio",
