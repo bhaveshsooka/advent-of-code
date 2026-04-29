@@ -7,8 +7,11 @@ where
 
 import AOC2015.Module qualified as AOC2015
 import AOC2016.Module qualified as AOC2016
+import AOC2017.Module qualified as AOC2017
 import AOC2018.Module qualified as AOC2018
+import AOC2019.Module qualified as AOC2019
 import AOC2020.Module qualified as AOC2020
+import AOC2021.Module qualified as AOC2021
 import AOC2022.Module qualified as AOC2022
 import AOC2023.Module qualified as AOC2023
 import AOC2024.Module qualified as AOC2024
@@ -151,8 +154,11 @@ getParts (year, day) =
   pure $ case year of
     2015 -> AOC2015.getParts day
     2016 -> AOC2016.getParts day
+    2017 -> AOC2017.getParts day
     2018 -> AOC2018.getParts day
+    2019 -> AOC2019.getParts day
     2020 -> AOC2020.getParts day
+    2021 -> AOC2021.getParts day
     2022 -> AOC2022.getParts day
     2023 -> AOC2023.getParts day
     2024 -> AOC2024.getParts day
