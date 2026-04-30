@@ -62,7 +62,7 @@ executable advent-of-code-haskell
 
   -- GHC options for this executable.
   ghc-options:      -Wall -O2 -threaded -rtsopts -with-rtsopts=-N
-  
+
   -- Modules included in this executable, other than Main.
   other-modules:
     AOC2015.Day01
@@ -85,6 +85,7 @@ executable advent-of-code-haskell
     AOC2015.Day18
     AOC2015.Day19
     AOC2015.Day20
+    AOC2015.Day21
     AOC2015.Module
     AOC2016.Day01
     AOC2016.Day02
@@ -153,6 +154,7 @@ executable advent-of-code-haskell
     Util.GridUtils.DirectionMoore
     Util.GridUtils.DirectionVonNeumann
     Util.GridUtils.Grid
+    Util.ListUtils
     Util.MathUtils
     Util.ParseUtils
     Util.TimeUtils
