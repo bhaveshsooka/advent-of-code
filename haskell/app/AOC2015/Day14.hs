@@ -6,6 +6,7 @@ where
 
 import Data.Text qualified as T
 import Text.Parsec qualified as P
+import Util.ExtraUtils (liftA4)
 import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
@@ -51,9 +52,10 @@ parseReindeerStats input = parseAoCInput input reindeerStatsParser "reindeerStat
     numParser = read <$> P.many1 P.digit
     nameParser = P.many1 $ P.noneOf [' ']
     reindeerStatParser =
-      (,,,)
-        <$> (nameParser <* P.string " can fly ")
-        <*> (numParser <* P.string " km/s for ")
-        <*> (numParser <* P.string " seconds, but then must rest for ")
-        <*> (numParser <* P.string " seconds.")
+      liftA4
+        (,,,)
+        (nameParser <* P.string " can fly ")
+        (numParser <* P.string " km/s for ")
+        (numParser <* P.string " seconds, but then must rest for ")
+        (numParser <* P.string " seconds.")
     reindeerStatsParser = P.many1 $ reindeerStatParser <* P.optional P.newline

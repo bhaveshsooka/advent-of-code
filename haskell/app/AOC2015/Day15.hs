@@ -6,6 +6,7 @@ where
 
 import Data.Text qualified as T
 import Text.Parsec qualified as P
+import Util.ExtraUtils (liftA6)
 import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Score
@@ -59,11 +60,12 @@ parseIngredients input = parseAoCInput input ingredientsParser "ingredientsParse
     textureParser = P.string "texture " *> numParser <* P.string ", "
     caloriesParser = P.string "calories " *> numParser
     ingredientParser =
-      (,,,,,)
-        <$> nameParser
-        <*> capacityParser
-        <*> durabilityParser
-        <*> flavorParser
-        <*> textureParser
-        <*> caloriesParser
+      liftA6
+        (,,,,,)
+        nameParser
+        capacityParser
+        durabilityParser
+        flavorParser
+        textureParser
+        caloriesParser
     ingredientsParser = P.many1 $ ingredientParser <* P.optional P.newline

@@ -4,6 +4,7 @@ module AOC2020.Day02
   )
 where
 
+import Control.Applicative (liftA3)
 import Data.Text qualified as T
 import Text.Parsec qualified as P
 import Util.ParseUtils (parseAoCInput)
@@ -40,9 +41,10 @@ parsePasswordPolicies input = parseAoCInput input passwordPoliciesParser "passwo
   where
     numParser = read <$> P.many1 P.digit
     passwordRuleParser =
-      PasswordRule
-        <$> (numParser <* P.char '-')
-        <*> (numParser <* P.space)
-        <*> (P.anyChar <* P.string ": ")
+      liftA3
+        PasswordRule
+        (numParser <* P.char '-')
+        (numParser <* P.space)
+        (P.anyChar <* P.string ": ")
     passwordPolicyParser = (,) <$> passwordRuleParser <*> P.many1 P.letter
     passwordPoliciesParser = P.many1 $ passwordPolicyParser <* P.optional P.newline

@@ -9,6 +9,7 @@ where
 37221270076916
 -}
 
+import Control.Applicative (liftA3)
 import Data.Bits (Bits (xor))
 import Data.List (singleton, (!?))
 import Data.Text qualified as T
@@ -117,9 +118,10 @@ parseRegistersAndProgram input = parseAoCInput input registersAndProgramParser "
     numParserWithVoider voidStr = P.string voidStr *> numParser
     registerParser lab = Register <$> numParserWithVoider ("Register " <> lab <> ": ")
     registersParser =
-      Registers
-        <$> (registerParser "A" <* P.newline)
-        <*> (registerParser "B" <* P.newline)
-        <*> (registerParser "C" <* P.newline)
+      liftA3
+        Registers
+        (registerParser "A" <* P.newline)
+        (registerParser "B" <* P.newline)
+        (registerParser "C" <* P.newline)
     programParser = P.string "Program: " *> P.sepBy numParser (P.char ',')
     registersAndProgramParser = (,) <$> registersParser <* P.newline <*> programParser

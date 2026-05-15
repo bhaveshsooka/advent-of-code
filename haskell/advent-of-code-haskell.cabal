@@ -33,7 +33,7 @@ version:         0.1.0.0
 license:         Apache-2.0
 
 -- The file containing the license text.
-license-file:    LICENSE
+license-file:    ../LICENSE
 
 -- The package author(s).
 author:          Bhavesh Sooka
@@ -153,6 +153,7 @@ executable advent-of-code-haskell
     Model
     Util.AOCHttpUtils
     Util.AOCUtils
+    Util.ExtraUtils
     Util.GridUtils.Coord
     Util.GridUtils.DirectionMoore
     Util.GridUtils.DirectionVonNeumann

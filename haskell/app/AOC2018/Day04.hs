@@ -8,6 +8,7 @@ import Data.List (sort)
 import Data.Map qualified as M
 import Data.Text qualified as T
 import Text.Parsec qualified as P
+import Util.ExtraUtils (liftA5)
 import Util.ParseUtils (parseAoCInput)
 
 part1 :: T.Text -> Int
@@ -79,12 +80,13 @@ parseRecords input = parseAoCInput input recordsParser "recordsParser"
   where
     numParser = read <$> P.many1 P.digit
     timestampParser =
-      Timestamp
-        <$> (P.char '[' *> numParser)
-        <*> (P.char '-' *> numParser)
-        <*> (P.char '-' *> numParser)
-        <*> (P.space *> numParser)
-        <*> (P.char ':' *> numParser <* P.string "] ")
+      liftA5
+        Timestamp
+        (P.char '[' *> numParser)
+        (P.char '-' *> numParser)
+        (P.char '-' *> numParser)
+        (P.space *> numParser)
+        (P.char ':' *> numParser <* P.string "] ")
     sleepParser = Sleep <$ P.string "falls asleep"
     wakeParser = Wake <$ P.string "wakes up"
     shiftStartParser = ShiftStart <$> (P.string "Guard #" *> numParser <* P.string " begins shift")

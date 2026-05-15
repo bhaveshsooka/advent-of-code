@@ -15,7 +15,8 @@ part2 input = calcCaptcha (T.head input) 0 (T.unpack input) (T.length input `div
 
 calcCaptcha :: Char -> Int -> [Char] -> Int -> Int -> Int
 calcCaptcha pc i input skip acc
-  | i == n - 1 = if nc == pc then acc + toAdd else acc
+  | i == n - 1 && nc == pc = acc + toAdd
+  | i == n - 1 = acc
   | nc == pc = calcCaptcha (input !! nexti) nexti input skip (acc + toAdd)
   | otherwise = calcCaptcha (input !! nexti) nexti input skip acc
   where
@@ -23,4 +24,3 @@ calcCaptcha pc i input skip acc
     nexti = i + 1
     nc = input !! ((i + skip) `mod` n)
     n = length input
-
